@@ -11,7 +11,7 @@ public class Crazy8sModel
 
     //C clubs S spades H hearts D diamonds     1 ace     1-10 normal    11-13 jack queen king     J joker
     List<string> cardDeck;
-    Dictionary<int, string[]> playerCards = new();
+    Dictionary<int, string> playerCards = new();
 
     public void Initialize()
     {
@@ -88,11 +88,14 @@ public class Crazy8sModel
         Debug.Log(cardTestString);
     }
 
+    /// <summary>
+    /// Tells all players the cards they start out with.
+    /// </summary>
     void SetPlayerStartingCards()
     {
         for (int i = 0; i < NumPlayers; i++)
         {
-            string playerCards = "";
+            string playerCardsString = "";
             for (int j = 0; j < StartCardCount; j++)
             {
                 if (cardDeck.Count == 0) //would only be true if there are more than Players * StartCardCount than cards in the deck
@@ -101,10 +104,35 @@ public class Crazy8sModel
                     ShuffleDeck();
                 }
 
-                playerCards += cardDeck[0] + " ";
+                playerCardsString += cardDeck[0] + " ";
                 cardDeck.RemoveAt(0);
             }
-            OnSetCardsInHand(i, playerCards);
+            playerCardsString.Trim();
+            playerCards[i] = playerCardsString;
+            OnSetCardsInHand(i, playerCardsString);
         }
+    }
+
+    /// <summary>
+    /// Converts a string of cards into an array of cards.
+    /// </summary>
+    /// <param name="cardString">String of cards, seperated by a space ' '.</param>
+    string[] CardStringToArray(string cardString)
+    {
+        return cardString.Trim().Split(" "); //trim not necessary but added just to be safe
+    }
+
+    /// <summary>
+    /// Converts an array of cards into a string of cards, seperated by a space ' '.
+    /// </summary>
+    string CardArrayToString(string[] cards)
+    {
+        string cardString = "";
+        foreach (string card in cards)
+        {
+            cardString += card + " ";
+        }
+        cardString.Trim();
+        return cardString;
     }
 }
