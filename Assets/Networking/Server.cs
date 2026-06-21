@@ -22,8 +22,9 @@ public class Server : MonoBehaviour
 	Dictionary<TcpNetworkConnection, int> playerIDs = new Dictionary<TcpNetworkConnection, int>();
 	int playerCount = 4;
 
-	// server code
-	void Start()
+    #region server code
+    // server code
+    void Start()
     {
 		// This server starts with a listener:
 		int port = 50006;
@@ -66,6 +67,7 @@ public class Server : MonoBehaviour
 				foreach (var pid in playerIDs.Keys) {
 					SendPrivateInformationCommand(playerIDs[pid], pid);
 				}
+				StartGame();
 			}
 		} else {
 			Debug.Log($"Sorry - already have {playerCount} players");
@@ -95,12 +97,15 @@ public class Server : MonoBehaviour
 		// remove disconnected clients here for example
 	}
 
-	//end server code
+    //end server code
+#endregion
 
-	void Initialize() {
-		//model.Reset();
+    void Initialize() {
+		model.Reset();
 
-		//// Subscribe to game model events:
+		//Subscribe to game model events:
+		model.OnSetCardsInHand += SetCardsInHand;
+
 		//model.OnNextRound += OnNextRoundRpc;
 		//model.OnWin += OnWinRpc;
 		//model.OnChoiceReveal += OnChoiceRevealRpc;
@@ -134,6 +139,11 @@ public class Server : MonoBehaviour
 		connection.Send(message.GetBytes()); // private message
 	}
 
+	void StartGame()
+	{
+		model.StartGame();
+	}
+
     void Broadcast(byte[] packet)
     {
         foreach (var conn in connections)
@@ -143,21 +153,29 @@ public class Server : MonoBehaviour
     }
 
     // These RPCs are called by game model events:
-    public void OnNextRoundRpc()
+	public void SetCardsInHand(int player, string cards)
 	{
-		OSCMessageOut message = new OSCMessageOut("/OnNextround");
-		Broadcast(message.GetBytes());
+		OSCMessageOut message = new OSCMessageOut("/OnSetCardsInHand").AddString(cards);
+		TcpNetworkConnection playerConnection =  playerIDs.FirstOrDefault(x => x.Value == player + 1).Key;
+		playerConnection.Send(message.GetBytes());
     }
-	public void OnWinRpc(int winner)
-	{
-        OSCMessageOut message = new OSCMessageOut("/OnWin").AddInt(winner);
-        Broadcast(message.GetBytes());
-    }
-    public void OnChoiceRevealRpc(int player, int choice)
-    {
-		//something with bundles may be able to be done here
-		OSCMessageOut message = new OSCMessageOut("/OnChoiceReveal").AddInt(player).AddInt(choice);
-        Broadcast(message.GetBytes());
-    }
+
+
+ //   public void OnNextRoundRpc()
+	//{
+	//	OSCMessageOut message = new OSCMessageOut("/OnNextround");
+	//	Broadcast(message.GetBytes());
+ //   }
+	//public void OnWinRpc(int winner)
+	//{
+ //       OSCMessageOut message = new OSCMessageOut("/OnWin").AddInt(winner);
+ //       Broadcast(message.GetBytes());
+ //   }
+ //   public void OnChoiceRevealRpc(int player, int choice)
+ //   {
+	//	//something with bundles may be able to be done here
+	//	OSCMessageOut message = new OSCMessageOut("/OnChoiceReveal").AddInt(player).AddInt(choice);
+ //       Broadcast(message.GetBytes());
+ //   }
 
 }

@@ -1,6 +1,7 @@
 using NetworkConnections;
 using OSCTools;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
@@ -59,10 +60,11 @@ public class Client : MonoBehaviour
 		// The (optional) list of parameter types (OSCUtil.INT) lets the dispatcher filter
 		//  messages that do not satisfy the expected signature (=parameter list):
 		dispatcher.AddListener("/PlayerInfo", RecievePrivateInformationCommandRpc, OSCUtil.INT);
-		dispatcher.AddListener("/OnNextround", OnNextRoundRpc);
-		dispatcher.AddListener("/OnWin", OnWinRpc, OSCUtil.INT);
-		dispatcher.AddListener("/OnChoiceReveal", OnChoiceRevealRpc, OSCUtil.INT, OSCUtil.INT);
-		dispatcher.AddListener("/OnMove", OnMoveRpc, OSCUtil.INT, OSCUtil.INT);
+		dispatcher.AddListener("/OnSetCardsInHand", SetCardsInHand, OSCUtil.STRING);
+		//dispatcher.AddListener("/OnNextround", OnNextRoundRpc);
+		//dispatcher.AddListener("/OnWin", OnWinRpc, OSCUtil.INT);
+		//dispatcher.AddListener("/OnChoiceReveal", OnChoiceRevealRpc, OSCUtil.INT, OSCUtil.INT);
+		//dispatcher.AddListener("/OnMove", OnMoveRpc, OSCUtil.INT, OSCUtil.INT);
     }
 
 	// ----- Incoming RPCs (events are triggered, and View classes subscribe):
@@ -71,6 +73,19 @@ public class Client : MonoBehaviour
 		int id = message.ReadInt() - 1;
 		playerID = id;
 		Debug.Log("Connected to server with player index " + playerID);
+	}
+
+	void SetCardsInHand(OSCMessageIn message, IPEndPoint remote)
+	{
+		string[] cards = message.ReadString().Split(' ');
+
+
+		string cardsString = "count: " + cards.Length + "   ";
+		foreach (string card in cards)
+		{
+			cardsString += card + " ";
+		}
+		Debug.Log(cardsString);
 	}
 
 	void OnNextRoundRpc(OSCMessageIn message, IPEndPoint remote)

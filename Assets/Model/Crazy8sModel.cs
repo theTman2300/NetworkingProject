@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class Crazy8sModel
 {
-    public event Action<int, string[]> SetCardsInHand;
+    public event Action<int, string> OnSetCardsInHand;
 
     public const int NumPlayers = 4;
+    public const int StartCardCount = 7;
 
     //C clubs S spades H hearts D diamonds     1 ace     1-10 normal    11-13 jack queen king     J joker
     List<string> cardDeck;
+    Dictionary<int, string[]> playerCards = new();
 
     public void Initialize()
     {
@@ -20,6 +22,11 @@ public class Crazy8sModel
     public void Reset()
     {
         Initialize();
+    }
+
+    public void StartGame()
+    {
+        SetPlayerStartingCards();
     }
 
     /// <summary>
@@ -59,8 +66,8 @@ public class Crazy8sModel
         //The amount of swaps is not very important so I just chose a high number
         for (int i = 0; i < 42069; i++)
         {
-            int rand1 = Random.Range(0, cardDeck.Count);
-            int rand2 = Random.Range(0, cardDeck.Count);
+            int rand1 = UnityEngine.Random.Range(0, cardDeck.Count);
+            int rand2 = UnityEngine.Random.Range(0, cardDeck.Count);
             string card1 = cardDeck[rand1];
             string card2 = cardDeck[rand2];
             cardDeck[rand1] = card2;
@@ -79,5 +86,25 @@ public class Crazy8sModel
             cardTestString += card + "  ";
         }
         Debug.Log(cardTestString);
+    }
+
+    void SetPlayerStartingCards()
+    {
+        for (int i = 0; i < NumPlayers; i++)
+        {
+            string playerCards = "";
+            for (int j = 0; j < StartCardCount; j++)
+            {
+                if (cardDeck.Count == 0) //would only be true if there are more than Players * StartCardCount than cards in the deck
+                {
+                    FillDeck();
+                    ShuffleDeck();
+                }
+
+                playerCards += cardDeck[0] + " ";
+                cardDeck.RemoveAt(0);
+            }
+            OnSetCardsInHand(i, playerCards);
+        }
     }
 }
