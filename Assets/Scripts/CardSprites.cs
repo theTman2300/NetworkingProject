@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class CardSprites : MonoBehaviour
 {
+    [SerializeField] public GameObject CardPrefab;
+    [Space]
     [SerializeField] Sprite[] clubs;
     [SerializeField] Sprite[] spades;
     [SerializeField] Sprite[] hearts;
@@ -10,7 +12,7 @@ public class CardSprites : MonoBehaviour
     [SerializeField] Sprite joker;
     [SerializeField] Sprite cardBack;
     [Space]
-    [SerializeField] public float drawCardDelaySeconds = .3f;
+    [SerializeField] public float DrawCardDelaySeconds = .3f;
 
 
     public Sprite GetCardSpriteByString(string card)
@@ -18,13 +20,13 @@ public class CardSprites : MonoBehaviour
         switch (card[0])
         {
             case 'C':
-                return clubs[(int)card[1]];
+                return clubs[int.Parse(card.Remove(0, 1)) - 1];
             case 'S':
-                return spades[(int)card[1]];
+                return spades[int.Parse(card.Remove(0, 1)) - 1];
             case 'H':
-                return hearts[(int)card[1]];
+                return hearts[int.Parse(card.Remove(0, 1)) - 1];
             case 'D':
-                return diamonds[(int)card[1]];
+                return diamonds[int.Parse(card.Remove(0, 1)) - 1];
             case 'J':
                 return joker;
         }

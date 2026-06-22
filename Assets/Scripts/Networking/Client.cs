@@ -79,8 +79,8 @@ public class Client : MonoBehaviour
 
 	void SetCardsInHand(OSCMessageIn message, IPEndPoint remote)
 	{
-		string[] cards = message.ReadString().Split(' ');
-		localPlayer.DrawCards(cards);
+		string[] cards = message.ReadString().Trim().Split(' ');
+		StartCoroutine(localPlayer.DrawCards(cards));
 
 		//string cardsString = "count: " + cards.Length + "   ";
 		//foreach (string card in cards)
