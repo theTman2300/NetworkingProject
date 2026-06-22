@@ -1,20 +1,20 @@
+using System.Collections;
 using UnityEngine;
 
 public class LocalPlayer : MonoBehaviour
 {
-	//[SerializeField]
-	//int playerIndex;
-
 	Client client;
+    CardSprites cardSprites;
 
-	void Start()
+
+    void Start()
     {
-		//model = FindFirstObjectByType<ModelHolder>().model;
 		client = FindFirstObjectByType<Client>();
-	}
+        cardSprites = FindFirstObjectByType<CardSprites>();
+    }
 
-	public void MakeChoice(int choice) {
-		client.ChooseStepsRpc(choice);
-
-	}
+    public IEnumerator DrawCards(string[] cards)
+    {
+        return null;
+    }
 }

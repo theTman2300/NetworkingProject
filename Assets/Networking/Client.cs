@@ -15,6 +15,7 @@ public class Client : MonoBehaviour
 	public IPAddress ServerIP = IPAddress.Loopback;
 	TcpNetworkConnection connection;
 	OSCDispatcher dispatcher;
+	LocalPlayer localPlayer;
 
 	int playerID;
 
@@ -26,7 +27,8 @@ public class Client : MonoBehaviour
 
     void Start()
     {
-		TcpClient client = new TcpClient();
+		localPlayer = FindFirstObjectByType<LocalPlayer>();
+        TcpClient client = new TcpClient();
 		client.Connect(new IPEndPoint(ServerIP, 50006));
 		connection = new TcpNetworkConnection(client);
 		// TODO: error handling
@@ -78,14 +80,14 @@ public class Client : MonoBehaviour
 	void SetCardsInHand(OSCMessageIn message, IPEndPoint remote)
 	{
 		string[] cards = message.ReadString().Split(' ');
+		localPlayer.DrawCards(cards);
 
-
-		string cardsString = "count: " + cards.Length + "   ";
-		foreach (string card in cards)
-		{
-			cardsString += card + " ";
-		}
-		Debug.Log(cardsString);
+		//string cardsString = "count: " + cards.Length + "   ";
+		//foreach (string card in cards)
+		//{
+		//	cardsString += card + " ";
+		//}
+		//Debug.Log(cardsString);
 	}
 
 	void OnNextRoundRpc(OSCMessageIn message, IPEndPoint remote)
