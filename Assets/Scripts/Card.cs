@@ -11,7 +11,6 @@ public class Card : MonoBehaviour
     [SerializeField] float hoverHeight = .8f;
 
     bool isHovering = false;
-    float hoverStartY;
     Transform spriteObject;
 
     private void Start()
@@ -38,11 +37,25 @@ public class Card : MonoBehaviour
         if (!Input.GetMouseButtonDown(0)) return;
         if (!isHovering) return;
 
-        //set card to the spriteObject position
-        transform.position = spriteObject.position;
-        spriteObject.position = transform.position;
+
         isHovering = false;
         CanBeUsed = false;
         FindFirstObjectByType<LocalPlayer>().PlayCard(this);
+    }
+
+    public void PlayCard()
+    {
+        //set card to the spriteObject position
+        transform.position = spriteObject.position;
+        spriteObject.position = transform.position;
+        IsPlayerCard = false;
+    }
+
+    /// <summary>
+    /// Returns card to the down/unhovered position
+    /// </summary>
+    public void DownCard()
+    {
+        spriteObject.DOMoveY(transform.position.y, .2f).SetEase(Ease.OutBack);
     }
 }

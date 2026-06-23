@@ -62,11 +62,9 @@ public class Client : MonoBehaviour
 		// The (optional) list of parameter types (OSCUtil.INT) lets the dispatcher filter
 		//  messages that do not satisfy the expected signature (=parameter list):
 		dispatcher.AddListener("/PlayerInfo", RecievePrivateInformationCommandRpc, OSCUtil.INT);
-		dispatcher.AddListener("/OnSetCardsInHand", SetCardsInHand, OSCUtil.STRING);
-		//dispatcher.AddListener("/OnNextround", OnNextRoundRpc);
-		//dispatcher.AddListener("/OnWin", OnWinRpc, OSCUtil.INT);
-		//dispatcher.AddListener("/OnChoiceReveal", OnChoiceRevealRpc, OSCUtil.INT, OSCUtil.INT);
-		//dispatcher.AddListener("/OnMove", OnMoveRpc, OSCUtil.INT, OSCUtil.INT);
+		dispatcher.AddListener("/OnSetCardsInHand", SetCardsInHandRpc, OSCUtil.STRING);
+		dispatcher.AddListener("/OnSetFirstCard", SetFirstCardRpc, OSCUtil.STRING);
+
     }
 
 	// ----- Incoming RPCs (events are triggered, and View classes subscribe):
@@ -77,44 +75,21 @@ public class Client : MonoBehaviour
 		Debug.Log("Connected to server with player index " + playerID);
 	}
 
-	void SetCardsInHand(OSCMessageIn message, IPEndPoint remote)
+	void SetCardsInHandRpc(OSCMessageIn message, IPEndPoint remote)
 	{
 		string[] cards = message.ReadString().Trim().Split(' ');
 		StartCoroutine(localPlayer.DrawCards(cards));
-
-		//string cardsString = "count: " + cards.Length + "   ";
-		//foreach (string card in cards)
-		//{
-		//	cardsString += card + " ";
-		//}
-		//Debug.Log(cardsString);
 	}
 
-	void OnNextRoundRpc(OSCMessageIn message, IPEndPoint remote)
-	{
-		OnNextRound.Invoke();
-	}
-	void OnWinRpc(OSCMessageIn message, IPEndPoint remote)
-	{
-		int player = message.ReadInt();
-		OnWin.Invoke(player);
-	}
-	void OnChoiceRevealRpc(OSCMessageIn message, IPEndPoint remote)
-	{
-		int player = message.ReadInt();
-		int choice = message.ReadInt();
-		OnChoiceReveal.Invoke(player, choice);
-	}
-	void OnMoveRpc(OSCMessageIn message, IPEndPoint remote)
-	{
-		int player = message.ReadInt();
-		int stepsMade = message.ReadInt();
-		OnMove.Invoke(player, stepsMade);
-	}
+    void SetFirstCardRpc(OSCMessageIn message, IPEndPoint remote)
+    {
+        StartCoroutine(localPlayer.SetFirstCard(message.ReadString()));
+    }
 
-	// ----- Outgoing RPCs (called from Controller):
 
-	public void ChooseStepsRpc(int choice)
+    // ----- Outgoing RPCs (called from Controller):
+
+    public void ChooseStepsRpc(int choice)
 	{
         OSCMessageOut message = new OSCMessageOut("/ChooseSteps").AddInt(playerID).AddInt(choice);
 		connection.Send(message.GetBytes());

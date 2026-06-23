@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
+using static UnityEngine.Rendering.GPUSort;
 
 /// <summary>
 /// The Server is the class that manages network connections with all clients, and 
@@ -105,6 +106,7 @@ public class Server : MonoBehaviour
 
 		//Subscribe to game model events:
 		model.OnSetCardsInHand += SetCardsInHand;
+		model.OnSetFirstCard += SetFirstCard;
 
 		//model.OnNextRound += OnNextRoundRpc;
 		//model.OnWin += OnWinRpc;
@@ -158,6 +160,12 @@ public class Server : MonoBehaviour
 		OSCMessageOut message = new OSCMessageOut("/OnSetCardsInHand").AddString(cards);
 		TcpNetworkConnection playerConnection =  playerIDs.FirstOrDefault(x => x.Value == player + 1).Key;
 		playerConnection.Send(message.GetBytes());
+    }
+
+	public void SetFirstCard(string card)
+	{
+        OSCMessageOut message = new OSCMessageOut("/OnSetFirstCard").AddString(card);
+		Broadcast(message.GetBytes());
     }
 
 

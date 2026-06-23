@@ -10,13 +10,16 @@ public class LocalPlayer : MonoBehaviour
 {
     [SerializeField] Transform cardStack;
     [SerializeField] float distanceBetweenCards = -.3f;
+    [SerializeField] Transform currentCardPos;
 
     Client client;
     CardSprites cardSprites;
 
     float cardSize;
     float cardDistance;
+    bool finishedDealingCards = false;
     List<Card> cardsInHand;
+    Card currentCard; //the card currently on the table
 
     void Start()
     {
@@ -38,7 +41,18 @@ public class LocalPlayer : MonoBehaviour
             yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds);
 
         }
+        finishedDealingCards = true;
         yield return null;
+    }
+
+    public IEnumerator SetFirstCard(string card)
+    {
+        yield return new WaitUntil(() => finishedDealingCards);
+        yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds * 1.6f);
+        SetCardsUsable(true);
+        Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
+        cardObject.name = "firstCard";
+        DoMovePlayedCard(cardObject, card);
     }
 
     void DoMoveDrawnCard(Card card, string cardString)
@@ -55,22 +69,43 @@ public class LocalPlayer : MonoBehaviour
         });
 
         float cardX = ((cardsInHand.Count - 1) - (cardsInHand.Count - 1) / 2f) * cardDistance;
-        card.transform.DOMove(new Vector3(cardX - (cardX / 2), -3, card.transform.position.z), .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => { card.CanBeUsed = true; });
+        card.transform.DOMove(new Vector3(cardX - (cardX / 2), -3, card.transform.position.z), .5f).SetEase(Ease.OutBack, 1.3f);
         MoveCenterCardDeck(false);
+    }
+
+    void DoMovePlayedCard(Card card, string cardString)
+    {
+        card.IsPlayerCard = true;
+        card.CardType = cardString;
+        card.CanBeUsed = false;
+        card.transform.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() =>
+        {
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardSprites.GetCardSpriteByString(cardString);
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = cardsInHand.Count;
+            card.transform.DOScale(new Vector3(1, 1, 1), .2f);
+        });
+
+        card.transform.DOMove(currentCardPos.position, .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() =>
+        {
+            if (currentCard != null)
+                Destroy(currentCard.gameObject);
+            currentCard = card;
+        });
     }
 
     void MoveCenterCardDeck(bool includeLastCard)
     {
         cardDistance = (cardSize + distanceBetweenCards);
         int amount = includeLastCard ? cardsInHand.Count : cardsInHand.Count - 1;
+        SetCardsUsable(false);
         for (int i = 0; i < amount; i++)
         {
-            cardsInHand[i].CanBeUsed = false;
             float cardX = (i - (cardsInHand.Count - 1) / 2f) * cardDistance;
             cardsInHand[i].transform.DOMove(new Vector3(cardX - (cardX / 2), -3, cardsInHand[i].transform.position.z), .5f).SetEase(Ease.OutBack, 1.1f);
             cardsInHand[i].transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = i;
         }
-        StartCoroutine(SetCardsUsable(true, 1.1f)); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
+        if (finishedDealingCards)
+            StartCoroutine(SetCardsUsable(true, .5f)); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
     }
 
     void SetCardsUsable(bool usable)
@@ -131,7 +166,26 @@ public class LocalPlayer : MonoBehaviour
 
     public void PlayCard(Card card)
     {
-        SetCardsUsable(false);
-        Debug.Log("Played card: " + card.CardType + "  of index: " + card.CardIndex);
+        if (CheckCardCanBePlayed(card.CardType))
+        {
+            SetCardsUsable(false);
+            Debug.Log("Played card: " + card.CardType + "  of index: " + card.CardIndex);
+            card.PlayCard();
+            currentCard = card;
+
+        }
+        else
+        {
+            card.DownCard();
+        }
+    }
+
+    bool CheckCardCanBePlayed(string card)
+    {
+        if (currentCard == null) return true;
+        if (card == "J") return true;
+        if (currentCard.CardType[0] == card[0]) return true;
+        if (currentCard.CardType.Remove(0, 1) == card.Remove(0, 1)) return true;
+        return false;
     }
 }

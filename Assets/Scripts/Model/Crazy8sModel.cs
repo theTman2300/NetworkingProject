@@ -5,6 +5,7 @@ using UnityEngine;
 public class Crazy8sModel
 {
     public event Action<int, string> OnSetCardsInHand;
+    public event Action<string> OnSetFirstCard;
 
     public const int NumPlayers = 1;
     public const int StartCardCount = 7;
@@ -111,6 +112,8 @@ public class Crazy8sModel
             playerCards[i] = playerCardsString;
             OnSetCardsInHand(i, playerCardsString);
         }
+        OnSetFirstCard.Invoke(cardDeck[0]);
+        cardDeck.RemoveAt(0);
     }
 
     /// <summary>
