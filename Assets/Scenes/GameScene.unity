@@ -207,7 +207,7 @@ MonoBehaviour:
   - {fileID: 4427191720712031663, guid: 5d87770b5b00817439a47d5c17ee78b2, type: 3}
   joker: {fileID: 4923895830092443574, guid: 55a2af18cdec8bd4bbf2a0f3b2adb2b4, type: 3}
   cardBack: {fileID: -8922603266660646136, guid: 4fee6fa2bf3e4b249add2e79123bdb1d, type: 3}
-  DrawCardDelaySeconds: 1
+  DrawCardDelaySeconds: 0.3
 --- !u!4 &457952409
 Transform:
   m_ObjectHideFlags: 0
@@ -372,7 +372,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalPlayer
   cardStack: {fileID: 687492713}
-  distanceBetweenCards: -0.1
+  distanceBetweenCards: -0.3
 --- !u!4 &1304523185
 Transform:
   m_ObjectHideFlags: 0

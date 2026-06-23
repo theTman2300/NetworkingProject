@@ -2,7 +2,9 @@ using DG.Tweening;
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using NaughtyAttributes;
 
 public class LocalPlayer : MonoBehaviour
 {
@@ -14,7 +16,7 @@ public class LocalPlayer : MonoBehaviour
 
     float cardSize;
     float cardDistance;
-    List<GameObject> cardsInHand;
+    List<Card> cardsInHand;
 
     void Start()
     {
@@ -22,14 +24,13 @@ public class LocalPlayer : MonoBehaviour
         cardSprites = FindFirstObjectByType<CardSprites>();
         cardsInHand = new();
         cardSize = cardSprites.GetCardBackSprite().bounds.size.x;
-        cardDistance = (cardSize - distanceBetweenCards);
     }
 
     public IEnumerator DrawCards(string[] cards)
     {
         foreach (string card in cards)
         {
-            GameObject cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity);
+            Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
             cardsInHand.Add(cardObject);
             //StartCoroutine(DoMoveCard(cardObject, card));
             DoMoveDrawnCard(cardObject, card);
@@ -39,9 +40,9 @@ public class LocalPlayer : MonoBehaviour
         yield return null;
     }
 
-    void DoMoveDrawnCard(GameObject card, string cardString)
+    void DoMoveDrawnCard(Card card, string cardString)
     {
-        card.transform.DOScale(new Vector3(0 ,1 ,1), .2f).OnComplete(() => 
+        card.transform.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() =>
         {
             card.GetComponent<SpriteRenderer>().sprite = cardSprites.GetCardSpriteByString(cardString);
             card.GetComponent<SpriteRenderer>().sortingOrder = cardsInHand.Count;
@@ -57,11 +58,50 @@ public class LocalPlayer : MonoBehaviour
 
     void MoveCenterCardDeck(bool includeLastCard)
     {
+        cardDistance = (cardSize + distanceBetweenCards);
         int amount = includeLastCard ? cardsInHand.Count : cardsInHand.Count - 1;
         for (int i = 0; i < amount; i++)
         {
             float cardX = (i - (cardsInHand.Count - 1) / 2f) * cardDistance;
             cardsInHand[i].transform.DOMove(new Vector3(cardX - (cardX / 2), -3, 0), .5f).SetEase(Ease.OutBack, 1.1f);
+            cardsInHand[i].GetComponent<SpriteRenderer>().sortingOrder = i;
         }
+    }
+
+    [Button]
+    void SortDeck()
+    {
+        List<(int, Card)> intCards = new();
+        foreach (Card card in cardsInHand)
+        {
+            switch (card.cardType[0])
+            {
+                case 'C':
+                    intCards.Add((0 + int.Parse(card.cardType.Remove(0, 1)), card));
+                    break;
+                case 'S':
+                    intCards.Add((100 + int.Parse(card.cardType.Remove(0, 1)), card));
+                    break;
+                case 'H':
+                    intCards.Add((200 + int.Parse(card.cardType.Remove(0, 1)), card));
+                    break;
+                case 'D':
+                    intCards.Add((300 + int.Parse(card.cardType.Remove(0, 1)), card));
+                    break;
+                case 'J':
+                    intCards.Add((400, card));
+                    break;
+            }
+        }
+
+        intCards = intCards.OrderBy(x => x.Item1).ToList();
+
+        cardsInHand.Clear();
+        foreach ((int, Card) card in intCards)
+        {
+            cardsInHand.Add(card.Item2);
+        }
+
+        MoveCenterCardDeck(true);
     }
 }
