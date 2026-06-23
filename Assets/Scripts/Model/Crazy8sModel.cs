@@ -1,18 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Crazy8sModel
 {
     public event Action<int, string> OnSetCardsInHand;
     public event Action<string> OnSetFirstCard;
+    public event Action<int> OnChangePlayerTurn;
+    public event Action<int, string> OnPlayerPlayedCard;
 
-    public const int NumPlayers = 1;
+    public const int NumPlayers = 4;
     public const int StartCardCount = 7;
 
     //C clubs S spades H hearts D diamonds     1 ace     1-10 normal    11-13 jack queen king     J joker
     List<string> cardDeck;
     Dictionary<int, string> playerCards = new();
+    int currentPlayer = 1;
+    string currentCard = "";
 
     public void Initialize()
     {
@@ -113,7 +118,40 @@ public class Crazy8sModel
             OnSetCardsInHand(i, playerCardsString);
         }
         OnSetFirstCard.Invoke(cardDeck[0]);
+        currentCard = cardDeck[0];
         cardDeck.RemoveAt(0);
+    }
+
+    public void PlayerPlayedCard(int player, int cardIndex)
+    {
+        string[] currentPlayerCards = CardStringToArray(playerCards[player - 1]);
+        string card = currentPlayerCards[cardIndex];
+        if (player != currentPlayer || !CheckCardCanBePlayed(card))
+        {
+            Debug.Log("someone cheated/error occured");
+            return;
+        }
+        currentCard = card;
+
+        string newPlayerCards = "";
+        for (int i = 0; i < currentPlayerCards.Length; i++)
+        {
+            if (i == cardIndex) continue;
+            newPlayerCards += currentPlayerCards[i] + " ";
+        }
+        newPlayerCards.Trim();
+        playerCards[player] = newPlayerCards;
+        OnPlayerPlayedCard.Invoke(player, card);
+        Debug.Log("I Invoked yippe   player: " + player + "   card: " + card);
+    }
+
+    bool CheckCardCanBePlayed(string card)
+    {
+        if (currentCard == null) return true;
+        if (card == "J") return true;
+        if (currentCard[0] == card[0]) return true;
+        if (currentCard.Remove(0, 1) == card.Remove(0, 1)) return true;
+        return false;
     }
 
     /// <summary>

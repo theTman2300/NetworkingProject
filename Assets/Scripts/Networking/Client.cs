@@ -88,12 +88,11 @@ public class Client : MonoBehaviour
 
 
     // ----- Outgoing RPCs (called from Controller):
-
-    public void ChooseStepsRpc(int choice)
+	public void PlayCard(int cardIndex)
 	{
-        OSCMessageOut message = new OSCMessageOut("/ChooseSteps").AddInt(playerID).AddInt(choice);
-		connection.Send(message.GetBytes());
-	}
+		OSCMessageOut message = new OSCMessageOut("/PlayCard").AddInt(cardIndex);
+        connection.Send(message.GetBytes());
+    }
 
 	public void ResetRpc()
 	{

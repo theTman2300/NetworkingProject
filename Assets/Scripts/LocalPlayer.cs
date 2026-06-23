@@ -20,6 +20,7 @@ public class LocalPlayer : MonoBehaviour
     bool finishedDealingCards = false;
     List<Card> cardsInHand;
     Card currentCard; //the card currently on the table
+    int playedCardCounter = 0;
 
     void Start()
     {
@@ -81,7 +82,8 @@ public class LocalPlayer : MonoBehaviour
         card.transform.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() =>
         {
             card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardSprites.GetCardSpriteByString(cardString);
-            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = cardsInHand.Count;
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = (playedCardCounter + 10) * 10;
+            playedCardCounter++;
             card.transform.DOScale(new Vector3(1, 1, 1), .2f);
         });
 
@@ -171,8 +173,11 @@ public class LocalPlayer : MonoBehaviour
             SetCardsUsable(false);
             Debug.Log("Played card: " + card.CardType + "  of index: " + card.CardIndex);
             card.PlayCard();
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = (playedCardCounter + 10) * 10;
+            playedCardCounter++;
+            card.transform.DOMove(currentCardPos.position, .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => { Destroy(currentCard); });
             currentCard = card;
-
+            client.PlayCard(card.CardIndex);
         }
         else
         {

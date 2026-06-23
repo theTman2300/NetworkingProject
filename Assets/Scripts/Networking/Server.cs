@@ -21,7 +21,7 @@ public class Server : MonoBehaviour
 
 	Crazy8sModel model = new();
 	Dictionary<TcpNetworkConnection, int> playerIDs = new Dictionary<TcpNetworkConnection, int>();
-	int playerCount = 1;
+	int playerCount = 4;
 
     #region server code
     // server code
@@ -107,13 +107,7 @@ public class Server : MonoBehaviour
 		//Subscribe to game model events:
 		model.OnSetCardsInHand += SetCardsInHand;
 		model.OnSetFirstCard += SetFirstCard;
-
-		//model.OnNextRound += OnNextRoundRpc;
-		//model.OnWin += OnWinRpc;
-		//model.OnChoiceReveal += OnChoiceRevealRpc;
-		//model.OnMove += OnMoveRpc;
-
-
+		model.OnPlayerPlayedCard += PlayerPlayedCard;
 
 		// (Note: we try to keep the game code independent from networking details.)
 
@@ -122,17 +116,34 @@ public class Server : MonoBehaviour
 		// Subscribe listeners for incoming messages:
 		// The (optional) list of parameter types (OSCUtil.INT) lets the dispatcher filter
 		//  messages that do not satisfy the expected signature (=parameter list):
-		dispatcher.AddListener("/ChooseSteps", ChooseStepsRpc, OSCUtil.INT, OSCUtil.INT);
+		dispatcher.AddListener("/PlayCard", PlayCardRpc, OSCUtil.INT);
 	}
 
 	// ----- Handle incoming RPCs(called by dispatcher) :
 
-	void ChooseStepsRpc(OSCMessageIn message, IPEndPoint remote)
-	{
-		int player = message.ReadInt();
-		int choice = message.ReadInt();
-		//model.ChooseSteps(player, choice);
+	void PlayCardRpc(OSCMessageIn message, IPEndPoint remote)
+    {
+		int cardIndex = message.ReadInt();
+        int player = PlayerFromRemote(remote);
+		model.PlayerPlayedCard(player, cardIndex);
 	}
+
+	/// <summary>
+	/// gets the playerID atached to the tcpnetworkconnection that has the same remote as the one put in.
+	/// Used for finding which player send an Rcp
+	/// </summary>
+	/// <returns>PlayerID when a match is found and 0 when no match is found.</returns>
+	int PlayerFromRemote(IPEndPoint remote)
+	{
+		foreach(TcpNetworkConnection connection in playerIDs.Keys)
+		{
+			if (connection.Remote == remote)
+				return playerIDs[connection];
+
+        }
+		return 0;
+
+    }
 
 	// ----- Outgoing RPCs:
 	// This RPC is called when a client joins who is a player:
@@ -168,22 +179,28 @@ public class Server : MonoBehaviour
 		Broadcast(message.GetBytes());
     }
 
+	public void PlayerPlayedCard(int player, string card)
+	{
+		OSCMessageOut message = new OSCMessageOut("/OnPlayerPlayedCard").AddInt(player).AddString(card);
+		Broadcast(message.GetBytes());
+    }
 
- //   public void OnNextRoundRpc()
-	//{
-	//	OSCMessageOut message = new OSCMessageOut("/OnNextround");
-	//	Broadcast(message.GetBytes());
- //   }
-	//public void OnWinRpc(int winner)
-	//{
- //       OSCMessageOut message = new OSCMessageOut("/OnWin").AddInt(winner);
- //       Broadcast(message.GetBytes());
- //   }
- //   public void OnChoiceRevealRpc(int player, int choice)
- //   {
-	//	//something with bundles may be able to be done here
-	//	OSCMessageOut message = new OSCMessageOut("/OnChoiceReveal").AddInt(player).AddInt(choice);
- //       Broadcast(message.GetBytes());
- //   }
+
+    //   public void OnNextRoundRpc()
+    //{
+    //	OSCMessageOut message = new OSCMessageOut("/OnNextround");
+    //	Broadcast(message.GetBytes());
+    //   }
+    //public void OnWinRpc(int winner)
+    //{
+    //       OSCMessageOut message = new OSCMessageOut("/OnWin").AddInt(winner);
+    //       Broadcast(message.GetBytes());
+    //   }
+    //   public void OnChoiceRevealRpc(int player, int choice)
+    //   {
+    //	//something with bundles may be able to be done here
+    //	OSCMessageOut message = new OSCMessageOut("/OnChoiceReveal").AddInt(player).AddInt(choice);
+    //       Broadcast(message.GetBytes());
+    //   }
 
 }
