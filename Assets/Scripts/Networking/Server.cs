@@ -20,7 +20,7 @@ public class Server : MonoBehaviour
 
 	Crazy8sModel model = new();
 	Dictionary<TcpNetworkConnection, int> playerIDs = new Dictionary<TcpNetworkConnection, int>();
-	int playerCount = 4;
+	int playerCount = 1;
 
     #region server code
     // server code

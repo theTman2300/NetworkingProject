@@ -6,7 +6,7 @@ public class Crazy8sModel
 {
     public event Action<int, string> OnSetCardsInHand;
 
-    public const int NumPlayers = 4;
+    public const int NumPlayers = 1;
     public const int StartCardCount = 7;
 
     //C clubs S spades H hearts D diamonds     1 ace     1-10 normal    11-13 jack queen king     J joker

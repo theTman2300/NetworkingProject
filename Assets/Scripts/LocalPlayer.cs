@@ -31,8 +31,9 @@ public class LocalPlayer : MonoBehaviour
         foreach (string card in cards)
         {
             Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
+            cardObject.transform.position = new Vector3(cardObject.transform.position.x, cardObject.transform.position.y, cardsInHand.Count * -.1f);
+            cardObject.name = "card " + cardsInHand.Count;
             cardsInHand.Add(cardObject);
-            //StartCoroutine(DoMoveCard(cardObject, card));
             DoMoveDrawnCard(cardObject, card);
             yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds);
 
@@ -54,7 +55,7 @@ public class LocalPlayer : MonoBehaviour
         });
 
         float cardX = ((cardsInHand.Count - 1) - (cardsInHand.Count - 1) / 2f) * cardDistance;
-        card.transform.DOMove(new Vector3(cardX - (cardX / 2), -3, 0), .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => { card.CanBeUsed = true; });
+        card.transform.DOMove(new Vector3(cardX - (cardX / 2), -3, card.transform.position.z), .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => { card.CanBeUsed = true; });
         MoveCenterCardDeck(false);
     }
 
@@ -66,8 +67,17 @@ public class LocalPlayer : MonoBehaviour
         {
             cardsInHand[i].CanBeUsed = false;
             float cardX = (i - (cardsInHand.Count - 1) / 2f) * cardDistance;
-            cardsInHand[i].transform.DOMove(new Vector3(cardX - (cardX / 2), -3, 0), .5f).SetEase(Ease.OutBack, 1.1f).OnComplete(() => { cardsInHand[i].CanBeUsed = true; });
+            cardsInHand[i].transform.DOMove(new Vector3(cardX - (cardX / 2), -3, cardsInHand[i].transform.position.z), .5f).SetEase(Ease.OutBack, 1.1f);
             cardsInHand[i].GetComponent<SpriteRenderer>().sortingOrder = i;
+        }
+        Invoke("SetCardsUsable", 1.1f); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
+    }
+
+    void SetCardsUsable()
+    {
+        foreach (Card card in cardsInHand)
+        {
+            card.CanBeUsed = true;
         }
     }
 
@@ -100,9 +110,11 @@ public class LocalPlayer : MonoBehaviour
         intCards = intCards.OrderBy(x => x.Item1).ToList();
 
         cardsInHand.Clear();
-        foreach ((int, Card) card in intCards)
+        for (int i = 0; i < intCards.Count; i++)
         {
-            cardsInHand.Add(card.Item2);
+            cardsInHand.Add(intCards[i].Item2);
+            intCards[i].Item2.transform.position = new Vector3(intCards[i].Item2.transform.position.x, intCards[i].Item2.transform.position.y, i * -.1f);
+            intCards[i].Item2.GetComponent<SpriteRenderer>().sortingOrder = i;
         }
 
         MoveCenterCardDeck(true);
