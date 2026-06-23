@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 public class Card : MonoBehaviour
@@ -6,14 +7,42 @@ public class Card : MonoBehaviour
     public bool CanBeUsed = false;
     public string CardType;
     public int CardIndex;
+    [Space]
+    [SerializeField] float hoverHeight = .8f;
+
+    bool isHovering = false;
+    float hoverStartY;
+    Transform spriteObject;
+
+    private void Start()
+    {
+        spriteObject = transform.GetChild(0).transform;
+    }
 
     private void OnMouseEnter()
     {
-        Debug.Log("I'm in.   " + name);
+        if (!CanBeUsed || isHovering) return;
+        spriteObject.DOMoveY(transform.position.y + hoverHeight, .2f).SetEase(Ease.OutBack);
+        isHovering = true;
     }
 
     private void OnMouseExit()
     {
-        Debug.Log("1.3 seconds     " + name);
+        if (!CanBeUsed || !isHovering) return;
+        spriteObject.DOMoveY(transform.position.y, .2f).SetEase(Ease.OutBack);
+        isHovering = false;
+    }
+
+    private void Update()
+    {
+        if (!Input.GetMouseButtonDown(0)) return;
+        if (!isHovering) return;
+
+        //set card to the spriteObject position
+        transform.position = spriteObject.position;
+        spriteObject.position = transform.position;
+        isHovering = false;
+        CanBeUsed = false;
+        FindFirstObjectByType<LocalPlayer>().PlayCard(this);
     }
 }

@@ -49,8 +49,8 @@ public class LocalPlayer : MonoBehaviour
         card.CanBeUsed = false;
         card.transform.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() =>
         {
-            card.GetComponent<SpriteRenderer>().sprite = cardSprites.GetCardSpriteByString(cardString);
-            card.GetComponent<SpriteRenderer>().sortingOrder = cardsInHand.Count;
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardSprites.GetCardSpriteByString(cardString);
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = cardsInHand.Count;
             card.transform.DOScale(new Vector3(1, 1, 1), .2f);
         });
 
@@ -68,16 +68,25 @@ public class LocalPlayer : MonoBehaviour
             cardsInHand[i].CanBeUsed = false;
             float cardX = (i - (cardsInHand.Count - 1) / 2f) * cardDistance;
             cardsInHand[i].transform.DOMove(new Vector3(cardX - (cardX / 2), -3, cardsInHand[i].transform.position.z), .5f).SetEase(Ease.OutBack, 1.1f);
-            cardsInHand[i].GetComponent<SpriteRenderer>().sortingOrder = i;
+            cardsInHand[i].transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = i;
         }
-        Invoke("SetCardsUsable", 1.1f); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
+        StartCoroutine(SetCardsUsable(true, 1.1f)); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
     }
 
-    void SetCardsUsable()
+    void SetCardsUsable(bool usable)
     {
         foreach (Card card in cardsInHand)
         {
-            card.CanBeUsed = true;
+            card.CanBeUsed = usable;
+        }
+    }
+
+    IEnumerator SetCardsUsable(bool usable, float delaySeconds)
+    {
+        yield return new WaitForSeconds(delaySeconds);
+        foreach (Card card in cardsInHand)
+        {
+            card.CanBeUsed = usable;
         }
     }
 
@@ -114,9 +123,15 @@ public class LocalPlayer : MonoBehaviour
         {
             cardsInHand.Add(intCards[i].Item2);
             intCards[i].Item2.transform.position = new Vector3(intCards[i].Item2.transform.position.x, intCards[i].Item2.transform.position.y, i * -.1f);
-            intCards[i].Item2.GetComponent<SpriteRenderer>().sortingOrder = i;
+            intCards[i].Item2.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = i;
         }
 
         MoveCenterCardDeck(true);
+    }
+
+    public void PlayCard(Card card)
+    {
+        SetCardsUsable(false);
+        Debug.Log("Played card: " + card.CardType + "  of index: " + card.CardIndex);
     }
 }
