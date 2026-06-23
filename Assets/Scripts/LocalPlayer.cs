@@ -21,6 +21,7 @@ public class LocalPlayer : MonoBehaviour
     List<Card> cardsInHand;
     Card currentCard; //the card currently on the table
     int playedCardCounter = 0;
+    bool isThisPlayerTurn = false;
 
     void Start()
     {
@@ -50,10 +51,11 @@ public class LocalPlayer : MonoBehaviour
     {
         yield return new WaitUntil(() => finishedDealingCards);
         yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds * 1.6f);
-        SetCardsUsable(true);
         Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
         cardObject.name = "firstCard";
         DoMovePlayedCard(cardObject, card);
+        yield return new WaitForSeconds(.5f);
+        SetCardsUsable(true);
     }
 
     void DoMoveDrawnCard(Card card, string cardString)
@@ -89,8 +91,8 @@ public class LocalPlayer : MonoBehaviour
 
         card.transform.DOMove(currentCardPos.position, .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() =>
         {
-            if (currentCard != null)
-                Destroy(currentCard.gameObject);
+            if (currentCard != null){
+                Destroy(currentCard.gameObject);}
             currentCard = card;
         });
     }
@@ -175,7 +177,8 @@ public class LocalPlayer : MonoBehaviour
             card.PlayCard();
             card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = (playedCardCounter + 10) * 10;
             playedCardCounter++;
-            card.transform.DOMove(currentCardPos.position, .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => { Destroy(currentCard); });
+            GameObject oldCard = currentCard.gameObject;
+            card.transform.DOMove(currentCardPos.position, .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => { Destroy(oldCard); });
             currentCard = card;
             client.PlayCard(card.CardIndex);
         }
@@ -183,6 +186,27 @@ public class LocalPlayer : MonoBehaviour
         {
             card.DownCard();
         }
+    }
+
+    public void PlayerPlayedCard(int player, string card)
+    {
+        if (isThisPlayerTurn) return;
+        Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
+        cardObject.name = "playedCard " + card;
+        DoMovePlayedCard(cardObject, card);
+    }
+
+    public void OnChangeTurn(int playerTurn, int thisPlayerID)
+    {
+        if (playerTurn - 1 == thisPlayerID)
+        {
+            isThisPlayerTurn = true;
+        }
+        else
+        {
+            isThisPlayerTurn = false;
+        }
+        Debug.Log("Is this player turn? " + isThisPlayerTurn);
     }
 
     bool CheckCardCanBePlayed(string card)

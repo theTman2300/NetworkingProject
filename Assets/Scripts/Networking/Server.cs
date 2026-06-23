@@ -108,15 +108,16 @@ public class Server : MonoBehaviour
 		model.OnSetCardsInHand += SetCardsInHand;
 		model.OnSetFirstCard += SetFirstCard;
 		model.OnPlayerPlayedCard += PlayerPlayedCard;
+		model.OnChangePlayerTurn += ChangePlayerTurn;
 
-		// (Note: we try to keep the game code independent from networking details.)
+        // (Note: we try to keep the game code independent from networking details.)
 
-		// (Note: no unsubscribe needed in OnDestroy, since the server owns the private board variable.)
+        // (Note: no unsubscribe needed in OnDestroy, since the server owns the private board variable.)
 
-		// Subscribe listeners for incoming messages:
-		// The (optional) list of parameter types (OSCUtil.INT) lets the dispatcher filter
-		//  messages that do not satisfy the expected signature (=parameter list):
-		dispatcher.AddListener("/PlayCard", PlayCardRpc, OSCUtil.INT);
+        // Subscribe listeners for incoming messages:
+        // The (optional) list of parameter types (OSCUtil.INT) lets the dispatcher filter
+        //  messages that do not satisfy the expected signature (=parameter list):
+        dispatcher.AddListener("/PlayCard", PlayCardRpc, OSCUtil.INT);
 	}
 
 	// ----- Handle incoming RPCs(called by dispatcher) :
@@ -183,6 +184,12 @@ public class Server : MonoBehaviour
 	{
 		OSCMessageOut message = new OSCMessageOut("/OnPlayerPlayedCard").AddInt(player).AddString(card);
 		Broadcast(message.GetBytes());
+    }
+
+	public void ChangePlayerTurn(int player)
+	{
+        OSCMessageOut message = new OSCMessageOut("/OnChangePlayerTurn").AddInt(player);
+        Broadcast(message.GetBytes());
     }
 
 

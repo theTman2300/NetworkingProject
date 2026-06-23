@@ -19,12 +19,6 @@ public class Client : MonoBehaviour
 
 	int playerID;
 
-    // Views subscribe here, on any client:
-    public event Action OnNextRound;
-    public event Action<int> OnWin;
-    public event Action<int, int> OnChoiceReveal; // player, choice
-    public event Action<int, int> OnMove; // player, actual steps made
-
     void Start()
     {
 		localPlayer = FindFirstObjectByType<LocalPlayer>();
@@ -64,11 +58,14 @@ public class Client : MonoBehaviour
 		dispatcher.AddListener("/PlayerInfo", RecievePrivateInformationCommandRpc, OSCUtil.INT);
 		dispatcher.AddListener("/OnSetCardsInHand", SetCardsInHandRpc, OSCUtil.STRING);
 		dispatcher.AddListener("/OnSetFirstCard", SetFirstCardRpc, OSCUtil.STRING);
+		dispatcher.AddListener("/OnPlayerPlayedCard", PlayerPlayedCardRpc, OSCUtil.INT, OSCUtil.STRING);
+        dispatcher.AddListener("/OnChangePlayerTurn", ChangePlayerTurn, OSCUtil.INT);
+
 
     }
 
-	// ----- Incoming RPCs (events are triggered, and View classes subscribe):
-	void RecievePrivateInformationCommandRpc(OSCMessageIn message, IPEndPoint remote)
+    // ----- Incoming RPCs (events are triggered, and View classes subscribe):
+    void RecievePrivateInformationCommandRpc(OSCMessageIn message, IPEndPoint remote)
 	{
 		int id = message.ReadInt() - 1;
 		playerID = id;
@@ -86,6 +83,18 @@ public class Client : MonoBehaviour
         StartCoroutine(localPlayer.SetFirstCard(message.ReadString()));
     }
 
+	void PlayerPlayedCardRpc(OSCMessageIn message, IPEndPoint remote)
+	{
+		int player = message.ReadInt();
+		string card = message.ReadString();
+		localPlayer.PlayerPlayedCard(player, card);
+	}
+
+	void ChangePlayerTurn(OSCMessageIn message, IPEndPoint remote)
+	{
+		int player = message.ReadInt();
+		localPlayer.OnChangeTurn(player, playerID);
+	}
 
     // ----- Outgoing RPCs (called from Controller):
 	public void PlayCard(int cardIndex)

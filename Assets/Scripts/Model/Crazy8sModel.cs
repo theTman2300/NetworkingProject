@@ -120,6 +120,8 @@ public class Crazy8sModel
         OnSetFirstCard.Invoke(cardDeck[0]);
         currentCard = cardDeck[0];
         cardDeck.RemoveAt(0);
+        OnChangePlayerTurn(1);
+        currentPlayer = 1;
     }
 
     public void PlayerPlayedCard(int player, int cardIndex)
