@@ -109,6 +109,7 @@ public class Server : MonoBehaviour
 		model.OnSetFirstCard += SetFirstCard;
 		model.OnPlayerPlayedCard += PlayerPlayedCard;
 		model.OnChangePlayerTurn += ChangePlayerTurn;
+		model.OnPlayerDrawCards += PlayerDrawCards;
 
         // (Note: we try to keep the game code independent from networking details.)
 
@@ -173,12 +174,21 @@ public class Server : MonoBehaviour
         }
     }
 
+	/// <summary>
+	/// Sends private info to the player with the attached playerID.
+	/// </summary>
+	/// <param name="playerID">starting from 0</param>
+	void SendToPlayerID(int playerID, byte[] packet)
+	{
+        TcpNetworkConnection playerConnection = playerIDs.FirstOrDefault(x => x.Value == playerID + 1).Key;
+        playerConnection.Send(packet);
+    }
+
     // These RPCs are called by game model events:
 	public void SetCardsInHand(int player, string cards)
 	{
 		OSCMessageOut message = new OSCMessageOut("/OnSetCardsInHand").AddString(cards);
-		TcpNetworkConnection playerConnection =  playerIDs.FirstOrDefault(x => x.Value == player + 1).Key;
-		playerConnection.Send(message.GetBytes());
+        SendToPlayerID(player, message.GetBytes());
     }
 
 	public void SetFirstCard(string card)
@@ -198,5 +208,14 @@ public class Server : MonoBehaviour
         OSCMessageOut message = new OSCMessageOut("/OnChangePlayerTurn").AddInt(player);
         Broadcast(message.GetBytes());
     }
+
+	public void PlayerDrawCards(int player, string cards)
+	{
+		OSCMessageOut privateMessage = new OSCMessageOut("/SetDrawnCards").AddString(cards);
+		SendToPlayerID(player - 1, privateMessage.GetBytes());
+
+		OSCMessageOut message = new OSCMessageOut("/PlayerDrawCards").AddInt(player).AddInt(cards.Trim().Split(' ').Length);
+		Broadcast(message.GetBytes());
+	}
 
 }

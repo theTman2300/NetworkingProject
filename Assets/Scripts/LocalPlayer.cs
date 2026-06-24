@@ -36,6 +36,7 @@ public class LocalPlayer : MonoBehaviour
 
     public IEnumerator DrawCards(string[] cards)
     {
+        //finishedDealingCards = false;
         foreach (string card in cards)
         {
             Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();

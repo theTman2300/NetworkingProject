@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ public class Crazy8sModel
     public event Action<string> OnSetFirstCard;
     public event Action<int> OnChangePlayerTurn;
     public event Action<int, string> OnPlayerPlayedCard;
+    public event Action<int, string> OnPlayerDrawCards;
 
     public const int NumPlayers = 4;
     public const int StartCardCount = 7;
@@ -118,6 +120,12 @@ public class Crazy8sModel
             OnSetCardsInHand(i, playerCardsString);
         }
         OnSetFirstCard.Invoke(cardDeck[0]);
+
+        if (cardDeck.Count == 0)
+        {
+            FillDeck();
+            ShuffleDeck();
+        }
         currentCard = cardDeck[0];
         cardDeck.RemoveAt(0);
         OnChangePlayerTurn.Invoke(1);
@@ -151,7 +159,20 @@ public class Crazy8sModel
 
     public void PlayerDrawCard(int playerID)
     {
-        Debug.Log("Recieved draw Card");
+        //check whether player drawing a card is the current player
+
+        if (cardDeck.Count == 0)
+        {
+            FillDeck();
+            ShuffleDeck();
+        }
+        string card = cardDeck[0];
+        cardDeck.RemoveAt(0);
+        OnPlayerDrawCards.Invoke(playerID, card);
+
+        List<string> currentPlayerCards = CardStringToArray(playerCards[playerID - 1]).ToList();
+        currentPlayerCards.Add(card);
+        playerCards[playerID - 1] = CardArrayToString(currentPlayerCards.ToArray());
     }
 
     bool CheckCardCanBePlayed(string card)

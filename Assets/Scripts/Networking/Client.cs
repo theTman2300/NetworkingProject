@@ -60,6 +60,8 @@ public class Client : MonoBehaviour
 		dispatcher.AddListener("/OnSetFirstCard", SetFirstCardRpc, OSCUtil.STRING);
 		dispatcher.AddListener("/OnPlayerPlayedCard", PlayerPlayedCardRpc, OSCUtil.INT, OSCUtil.STRING);
         dispatcher.AddListener("/OnChangePlayerTurn", ChangePlayerTurn, OSCUtil.INT);
+        dispatcher.AddListener("/SetDrawnCards", DrawCards, OSCUtil.STRING);
+        dispatcher.AddListener("/PlayerDrawCards", PlayerDrawCard, OSCUtil.INT, OSCUtil.INT);
 
 
     }
@@ -94,6 +96,20 @@ public class Client : MonoBehaviour
 	{
 		int player = message.ReadInt();
 		localPlayer.OnChangeTurn(player, playerID);
+	}
+
+	void DrawCards(OSCMessageIn message, IPEndPoint remote)
+	{
+		string cardsString = message.ReadString();
+        string[] cards = cardsString.Trim().Split(' ');
+        StartCoroutine(localPlayer.DrawCards(cards));
+    }
+
+	void PlayerDrawCard(OSCMessageIn message, IPEndPoint remote)
+	{
+		int player = message.ReadInt();
+		int cardCount = message.ReadInt();
+		Debug.Log("Player: " + player + "    drew " + cardCount + " cards");
 	}
 
     // ----- Outgoing RPCs (called from Controller):
