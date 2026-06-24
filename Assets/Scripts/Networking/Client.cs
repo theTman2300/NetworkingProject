@@ -97,7 +97,7 @@ public class Client : MonoBehaviour
 	void ChangePlayerTurn(OSCMessageIn message, IPEndPoint remote)
 	{
 		int player = message.ReadInt();
-		localPlayer.OnChangeTurn(player, playerID);
+		localPlayer.OnChangeTurn(player);
 	}
 
 	void DrawCards(OSCMessageIn message, IPEndPoint remote)

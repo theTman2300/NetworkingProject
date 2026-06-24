@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 26718371}
   - component: {fileID: 26718370}
   m_Layer: 0
-  m_Name: TurnIndicator
+  m_Name: TurnIndicatorSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -203,12 +203,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 26718369}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.97, y: -1.38, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.22218, y: 0.22218, z: 0.22218}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1975873474}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &94055266
 GameObject:
@@ -2082,7 +2082,7 @@ GameObject:
   m_Component:
   - component: {fileID: 998047527}
   m_Layer: 0
-  m_Name: ThisPlayerTurnArrowPos
+  m_Name: ThisPlayerTurnIndicatorPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2097,7 +2097,7 @@ Transform:
   m_GameObject: {fileID: 998047526}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.91522, y: 0.61187, z: 0}
+  m_LocalPosition: {x: -1.4, y: -4.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2687,6 +2687,8 @@ MonoBehaviour:
   player2: {fileID: 8476488997181102283}
   player3: {fileID: 8476488996916664152}
   player4: {fileID: 8476488997027111829}
+  turnIndicator: {fileID: 1975873474}
+  turnIndicatorPos: {fileID: 998047527}
 --- !u!4 &1304523185
 Transform:
   m_ObjectHideFlags: 0
@@ -3608,6 +3610,38 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1975873473
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1975873474}
+  m_Layer: 0
+  m_Name: TurnIndicator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1975873474
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1975873473}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -7, y: -1.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 26718371}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2006092599
 GameObject:
   m_ObjectHideFlags: 0
@@ -4328,7 +4362,7 @@ SceneRoots:
   - {fileID: 650843093}
   - {fileID: 998047527}
   - {fileID: 2027640961}
-  - {fileID: 26718371}
+  - {fileID: 1975873474}
   - {fileID: 6649306590970430275}
   - {fileID: 390678903}
   - {fileID: 8476488997181102282}

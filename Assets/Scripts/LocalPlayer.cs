@@ -12,9 +12,13 @@ public class LocalPlayer : MonoBehaviour
     [SerializeField] Transform cardStack;
     [SerializeField] float distanceBetweenCards = -.3f;
     [SerializeField] Transform currentCardPos;
+    [Header("Other Players")]
     [SerializeField] OtherPlayerCard player2;
     [SerializeField] OtherPlayerCard player3;
     [SerializeField] OtherPlayerCard player4;
+    [Header("Turn Indicator")]
+    [SerializeField] Transform turnIndicator;
+    [SerializeField] Transform turnIndicatorPos;
 
     Client client;
     CardSprites cardSprites;
@@ -274,7 +278,7 @@ public class LocalPlayer : MonoBehaviour
     /// <summary>
     /// Draws cards to the hand of another player.
     /// </summary>
-    /// <param name="player">Player index starting at 0.</param>
+    /// <param name="player">Player index starting at 1.</param>
     public IEnumerator PlayerDrawCards(int player, int count)
     {
         for (int i = 0; i < count; i++)
@@ -292,11 +296,12 @@ public class LocalPlayer : MonoBehaviour
     /// <summary>
     /// Gets the hand position of the player index.
     /// </summary>
-    /// <param name="player">Player index starting at 0.</param>
+    /// <param name="player">Player index starting at 1.</param>
     Vector3 GetOtherPlayerHandPosition(int player)
     {
         Vector3 position = cardStack.position;
         int thisPlayerId = client.playerID + 1;
+
         int other = thisPlayerId - player > 0 ? thisPlayerId - player : 4 + (thisPlayerId - player);
         switch (other)
         {
@@ -316,17 +321,30 @@ public class LocalPlayer : MonoBehaviour
     /// <summary>
     /// Processes the turn change.
     /// </summary>
-    public void OnChangeTurn(int playerTurn, int thisPlayerID)
+    /// <param name="playerTurn">Player ID whose Turn it is. Starting at 1.</param>
+    public void OnChangeTurn(int playerTurn)
     {
-        if (playerTurn - 1 == thisPlayerID)
+        if (playerTurn - 1 == client.playerID)
         {
             isThisPlayerTurn = true;
             SetCardsUsable(true);
+            turnIndicator.DOScale(0, .2f).OnComplete(() =>
+            {
+                turnIndicator.position = turnIndicatorPos.position;
+                turnIndicator.DOScale(1, .2f);
+            });
         }
         else
         {
             isThisPlayerTurn = false;
             SetCardsUsable(false);
+            Vector3 arrowPos = GetOtherPlayerHandPosition(playerTurn) + new Vector3(0, -1.3f, 0);
+            turnIndicator.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() => 
+            { 
+                turnIndicator.position = arrowPos;
+                turnIndicator.DOScale(1, .2f);
+            });
+            
         }
     }
 
