@@ -835,9 +835,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1293422597}
-        m_TargetAssemblyTypeName: Client, Assembly-CSharp
-        m_MethodName: DrawCard
+      - m_Target: {fileID: 1304523184}
+        m_TargetAssemblyTypeName: LocalPlayer, Assembly-CSharp
+        m_MethodName: PlayerDrawNewCard
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3717,6 +3717,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OtherPlayerCard
   playerText: {fileID: 265674133}
   cardCounter: {fileID: 420758329}
+  startCardAmount: 7
 --- !u!4 &8476488997027111828
 Transform:
   m_ObjectHideFlags: 0
@@ -3749,6 +3750,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OtherPlayerCard
   playerText: {fileID: 1684150655}
   cardCounter: {fileID: 397383207}
+  startCardAmount: 7
 --- !u!4 &8476488997181102282
 Transform:
   m_ObjectHideFlags: 0
@@ -3781,6 +3783,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OtherPlayerCard
   playerText: {fileID: 1878398942}
   cardCounter: {fileID: 596157060}
+  startCardAmount: 7
 --- !u!212 &8610351902602395425
 SpriteRenderer:
   serializedVersion: 2

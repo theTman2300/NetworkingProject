@@ -132,6 +132,11 @@ public class Crazy8sModel
         currentPlayer = 1;
     }
 
+    /// <summary>
+    /// Handles a player playing a card.
+    /// </summary>
+    /// <param name="playerID">Player ID starting at 0.</param>
+    /// <param name="cardIndex">Index of the card in hand, starting at 0.</param>
     public void PlayerPlayedCard(int player, int cardIndex)
     {
         string[] currentPlayerCards = CardStringToArray(playerCards[player - 1]);
@@ -153,13 +158,21 @@ public class Crazy8sModel
         playerCards[player - 1] = newPlayerCards;
         OnPlayerPlayedCard.Invoke(player, card);
 
-        currentPlayer = currentPlayer + 1 > NumPlayers ? 1 : currentPlayer + 1;
-        OnChangePlayerTurn.Invoke(currentPlayer);
+        NextPlayerTurn();
     }
 
+    /// <summary>
+    /// Handles a player drawing a card.
+    /// </summary>
+    /// <param name="playerID">Player ID starting at 0.</param>
     public void PlayerDrawCard(int playerID)
     {
         //check whether player drawing a card is the current player
+        if (playerID != currentPlayer)
+        {
+            Debug.Log("someone cheated/error occured");
+            return;
+        }
 
         if (cardDeck.Count == 0)
         {
@@ -173,6 +186,16 @@ public class Crazy8sModel
         List<string> currentPlayerCards = CardStringToArray(playerCards[playerID - 1]).ToList();
         currentPlayerCards.Add(card);
         playerCards[playerID - 1] = CardArrayToString(currentPlayerCards.ToArray());
+        NextPlayerTurn();
+    }
+
+    /// <summary>
+    /// Sets the turn to the next player.
+    /// </summary>
+    void NextPlayerTurn()
+    {
+        currentPlayer = currentPlayer + 1 > NumPlayers ? 1 : currentPlayer + 1;
+        OnChangePlayerTurn.Invoke(currentPlayer);
     }
 
     bool CheckCardCanBePlayed(string card)

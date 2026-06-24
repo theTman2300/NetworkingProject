@@ -150,9 +150,10 @@ public class LocalPlayer : MonoBehaviour
     /// <summary>
     /// Sets all cards in hand to be usable/unusable after a delay of delaySeconds
     /// </summary>
-    IEnumerator SetCardsUsable(bool usable, float delaySeconds)
+    IEnumerator SetCardsUsable(bool usable, float delaySeconds, bool checkThisPlayerTurn = true)
     {
         yield return new WaitForSeconds(delaySeconds);
+        if (!isThisPlayerTurn) yield break;
         foreach (Card card in cardsInHand)
         {
             card.CanBeUsed = usable;
@@ -207,7 +208,6 @@ public class LocalPlayer : MonoBehaviour
     {
         if (CheckCardCanBePlayed(card.CardType))
         {
-            SetCardsUsable(false);
             Debug.Log("Played card: " + card.CardType + "  of index: " + card.CardIndex);
             card.PlayCard();
             card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = (playedCardCounter + 10) * 10;
@@ -223,6 +223,7 @@ public class LocalPlayer : MonoBehaviour
             }
 
             client.PlayCard(card.CardIndex);
+            MoveCenterCardDeck(true);
         }
         else
         {
@@ -260,6 +261,17 @@ public class LocalPlayer : MonoBehaviour
     }
 
     /// <summary>
+    /// Sends the request to draw a card to the server.
+    /// </summary>
+    public void PlayerDrawNewCard()
+    {
+        if (!isThisPlayerTurn) return;
+        client.DrawCard();
+        isThisPlayerTurn = false;
+        SetCardsUsable(false);
+    }
+
+    /// <summary>
     /// Draws cards to the hand of another player.
     /// </summary>
     /// <param name="player">Player index starting at 0.</param>
@@ -268,10 +280,10 @@ public class LocalPlayer : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             GameObject card = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity);
-            card.transform.DOMove(GetOtherPlayerHandPosition(player), .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => 
+            card.transform.DOMove(GetOtherPlayerHandPosition(player), .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() =>
             {
                 ChangePlayerCardCount(player, 1);
-                Destroy(card); 
+                Destroy(card);
             });
             yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds);
         }
