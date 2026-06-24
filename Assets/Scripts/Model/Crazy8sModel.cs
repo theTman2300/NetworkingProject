@@ -120,7 +120,7 @@ public class Crazy8sModel
         OnSetFirstCard.Invoke(cardDeck[0]);
         currentCard = cardDeck[0];
         cardDeck.RemoveAt(0);
-        OnChangePlayerTurn(1);
+        OnChangePlayerTurn.Invoke(1);
         currentPlayer = 1;
     }
 
@@ -142,9 +142,16 @@ public class Crazy8sModel
             newPlayerCards += currentPlayerCards[i] + " ";
         }
         newPlayerCards.Trim();
-        playerCards[player] = newPlayerCards;
+        playerCards[player - 1] = newPlayerCards;
         OnPlayerPlayedCard.Invoke(player, card);
-        Debug.Log("I Invoked yippe   player: " + player + "   card: " + card);
+
+        currentPlayer = currentPlayer + 1 > NumPlayers ? 1 : currentPlayer + 1;
+        OnChangePlayerTurn.Invoke(currentPlayer);
+    }
+
+    public void PlayerDrawCard(int playerID)
+    {
+        Debug.Log("Recieved draw Card");
     }
 
     bool CheckCardCanBePlayed(string card)

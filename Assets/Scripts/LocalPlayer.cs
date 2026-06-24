@@ -11,6 +11,9 @@ public class LocalPlayer : MonoBehaviour
     [SerializeField] Transform cardStack;
     [SerializeField] float distanceBetweenCards = -.3f;
     [SerializeField] Transform currentCardPos;
+    [SerializeField] Transform player1Pos;
+    [SerializeField] Transform player2Pos;
+    [SerializeField] Transform player3Pos;
 
     Client client;
     CardSprites cardSprites;
@@ -55,7 +58,8 @@ public class LocalPlayer : MonoBehaviour
         cardObject.name = "firstCard";
         DoMovePlayedCard(cardObject, card);
         yield return new WaitForSeconds(.5f);
-        SetCardsUsable(true);
+        if (isThisPlayerTurn)
+            SetCardsUsable(true);
     }
 
     void DoMoveDrawnCard(Card card, string cardString)
@@ -91,8 +95,10 @@ public class LocalPlayer : MonoBehaviour
 
         card.transform.DOMove(currentCardPos.position, .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() =>
         {
-            if (currentCard != null){
-                Destroy(currentCard.gameObject);}
+            if (currentCard != null)
+            {
+                Destroy(currentCard.gameObject);
+            }
             currentCard = card;
         });
     }
@@ -108,7 +114,7 @@ public class LocalPlayer : MonoBehaviour
             cardsInHand[i].transform.DOMove(new Vector3(cardX - (cardX / 2), -3, cardsInHand[i].transform.position.z), .5f).SetEase(Ease.OutBack, 1.1f);
             cardsInHand[i].transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = i;
         }
-        if (finishedDealingCards)
+        if (finishedDealingCards && isThisPlayerTurn)
             StartCoroutine(SetCardsUsable(true, .5f)); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
     }
 
@@ -180,6 +186,13 @@ public class LocalPlayer : MonoBehaviour
             GameObject oldCard = currentCard.gameObject;
             card.transform.DOMove(currentCardPos.position, .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => { Destroy(oldCard); });
             currentCard = card;
+            cardsInHand.Remove(card);
+
+            foreach (Card restCard in cardsInHand)
+            {
+                if (restCard.CardIndex > card.CardIndex) restCard.CardIndex--;
+            }
+
             client.PlayCard(card.CardIndex);
         }
         else
@@ -191,7 +204,23 @@ public class LocalPlayer : MonoBehaviour
     public void PlayerPlayedCard(int player, string card)
     {
         if (isThisPlayerTurn) return;
-        Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
+        Vector3 position = cardStack.position;
+        int thisPlayerId = client.playerID + 1;
+        int other = thisPlayerId - player > 0 ? thisPlayerId - player : 4 + (thisPlayerId - player);
+        switch (other)
+        {
+            case 1:
+                position = player3Pos.position;
+                break;
+            case 2:
+                position = player2Pos.position;
+                break;
+            case 3:
+                position = player1Pos.position;
+                break;
+        }
+
+        Card cardObject = Instantiate(cardSprites.CardPrefab, position, Quaternion.identity).GetComponent<Card>();
         cardObject.name = "playedCard " + card;
         DoMovePlayedCard(cardObject, card);
     }
@@ -201,12 +230,13 @@ public class LocalPlayer : MonoBehaviour
         if (playerTurn - 1 == thisPlayerID)
         {
             isThisPlayerTurn = true;
+            SetCardsUsable(true);
         }
         else
         {
             isThisPlayerTurn = false;
+            SetCardsUsable(false);
         }
-        Debug.Log("Is this player turn? " + isThisPlayerTurn);
     }
 
     bool CheckCardCanBePlayed(string card)

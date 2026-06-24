@@ -118,7 +118,8 @@ public class Server : MonoBehaviour
         // The (optional) list of parameter types (OSCUtil.INT) lets the dispatcher filter
         //  messages that do not satisfy the expected signature (=parameter list):
         dispatcher.AddListener("/PlayCard", PlayCardRpc, OSCUtil.INT);
-	}
+        dispatcher.AddListener("/DrawCard", DrawCardRpc);
+    }
 
 	// ----- Handle incoming RPCs(called by dispatcher) :
 
@@ -129,12 +130,18 @@ public class Server : MonoBehaviour
 		model.PlayerPlayedCard(player, cardIndex);
 	}
 
-	/// <summary>
-	/// gets the playerID atached to the tcpnetworkconnection that has the same remote as the one put in.
-	/// Used for finding which player send an Rcp
-	/// </summary>
-	/// <returns>PlayerID when a match is found and 0 when no match is found.</returns>
-	int PlayerFromRemote(IPEndPoint remote)
+	void DrawCardRpc(OSCMessageIn message, IPEndPoint remote)
+	{
+        int player = PlayerFromRemote(remote);
+		model.PlayerDrawCard(player);
+    }
+
+    /// <summary>
+    /// gets the playerID atached to the tcpnetworkconnection that has the same remote as the one put in.
+    /// Used for finding which player send an Rcp
+    /// </summary>
+    /// <returns>PlayerID when a match is found and 0 when no match is found.</returns>
+    int PlayerFromRemote(IPEndPoint remote)
 	{
 		foreach(TcpNetworkConnection connection in playerIDs.Keys)
 		{
@@ -191,23 +198,5 @@ public class Server : MonoBehaviour
         OSCMessageOut message = new OSCMessageOut("/OnChangePlayerTurn").AddInt(player);
         Broadcast(message.GetBytes());
     }
-
-
-    //   public void OnNextRoundRpc()
-    //{
-    //	OSCMessageOut message = new OSCMessageOut("/OnNextround");
-    //	Broadcast(message.GetBytes());
-    //   }
-    //public void OnWinRpc(int winner)
-    //{
-    //       OSCMessageOut message = new OSCMessageOut("/OnWin").AddInt(winner);
-    //       Broadcast(message.GetBytes());
-    //   }
-    //   public void OnChoiceRevealRpc(int player, int choice)
-    //   {
-    //	//something with bundles may be able to be done here
-    //	OSCMessageOut message = new OSCMessageOut("/OnChoiceReveal").AddInt(player).AddInt(choice);
-    //       Broadcast(message.GetBytes());
-    //   }
 
 }

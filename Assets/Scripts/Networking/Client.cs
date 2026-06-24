@@ -17,7 +17,7 @@ public class Client : MonoBehaviour
 	OSCDispatcher dispatcher;
 	LocalPlayer localPlayer;
 
-	int playerID;
+	public int playerID;
 
     void Start()
     {
@@ -101,6 +101,13 @@ public class Client : MonoBehaviour
 	{
 		OSCMessageOut message = new OSCMessageOut("/PlayCard").AddInt(cardIndex);
         connection.Send(message.GetBytes());
+    }
+
+	public void DrawCard()
+	{
+		OSCMessageOut message = new OSCMessageOut("/DrawCard");
+		connection.Send(message.GetBytes());
+
     }
 
 	public void ResetRpc()
