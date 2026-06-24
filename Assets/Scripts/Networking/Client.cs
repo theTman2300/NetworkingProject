@@ -74,11 +74,13 @@ public class Client : MonoBehaviour
 		Debug.Log("Connected to server with player index " + playerID);
 	}
 
+	//only called once at start of game
 	void SetCardsInHandRpc(OSCMessageIn message, IPEndPoint remote)
 	{
 		string[] cards = message.ReadString().Trim().Split(' ');
 		StartCoroutine(localPlayer.DrawCards(cards));
-	}
+		localPlayer.SetOtherPlayers();
+    }
 
     void SetFirstCardRpc(OSCMessageIn message, IPEndPoint remote)
     {
@@ -109,7 +111,7 @@ public class Client : MonoBehaviour
 	{
 		int player = message.ReadInt();
 		int cardCount = message.ReadInt();
-		Debug.Log("Player: " + player + "    drew " + cardCount + " cards");
+		StartCoroutine(localPlayer.PlayerDrawCards(player, cardCount));
 	}
 
     // ----- Outgoing RPCs (called from Controller):

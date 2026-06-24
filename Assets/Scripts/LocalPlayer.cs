@@ -1,19 +1,20 @@
 using DG.Tweening;
+using NaughtyAttributes;
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using NaughtyAttributes;
+using UnityEngine.UIElements;
 
 public class LocalPlayer : MonoBehaviour
 {
     [SerializeField] Transform cardStack;
     [SerializeField] float distanceBetweenCards = -.3f;
     [SerializeField] Transform currentCardPos;
-    [SerializeField] Transform player1Pos;
-    [SerializeField] Transform player2Pos;
-    [SerializeField] Transform player3Pos;
+    [SerializeField] OtherPlayerCard player2;
+    [SerializeField] OtherPlayerCard player3;
+    [SerializeField] OtherPlayerCard player4;
 
     Client client;
     CardSprites cardSprites;
@@ -34,9 +35,12 @@ public class LocalPlayer : MonoBehaviour
         cardSize = cardSprites.GetCardBackSprite().bounds.size.x;
     }
 
+    /// <summary>
+    /// Creates/draws cards to the hand of this player.
+    /// </summary>
+    /// <param name="cards">Array of cards.</param>
     public IEnumerator DrawCards(string[] cards)
     {
-        //finishedDealingCards = false;
         foreach (string card in cards)
         {
             Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
@@ -51,6 +55,9 @@ public class LocalPlayer : MonoBehaviour
         yield return null;
     }
 
+    /// <summary>
+    /// Creates/sets the first card in play.
+    /// </summary>
     public IEnumerator SetFirstCard(string card)
     {
         yield return new WaitUntil(() => finishedDealingCards);
@@ -63,6 +70,9 @@ public class LocalPlayer : MonoBehaviour
             SetCardsUsable(true);
     }
 
+    /// <summary>
+    /// Moves a drawn card to this players hand.
+    /// </summary>
     void DoMoveDrawnCard(Card card, string cardString)
     {
         card.IsPlayerCard = true;
@@ -81,6 +91,9 @@ public class LocalPlayer : MonoBehaviour
         MoveCenterCardDeck(false);
     }
 
+    /// <summary>
+    /// Moves a card to the center play area while flipping.
+    /// </summary>
     void DoMovePlayedCard(Card card, string cardString)
     {
         card.IsPlayerCard = true;
@@ -104,6 +117,10 @@ public class LocalPlayer : MonoBehaviour
         });
     }
 
+    /// <summary>
+    /// Moves the cards in hand to be centered around the middle of the screen.
+    /// </summary>
+    /// <param name="includeLastCard">Whether the last card in hand will be moved as well.</param>
     void MoveCenterCardDeck(bool includeLastCard)
     {
         cardDistance = (cardSize + distanceBetweenCards);
@@ -119,6 +136,9 @@ public class LocalPlayer : MonoBehaviour
             StartCoroutine(SetCardsUsable(true, .5f)); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
     }
 
+    /// <summary>
+    /// Sets all cards in hand to be usable/unusable.
+    /// </summary>
     void SetCardsUsable(bool usable)
     {
         foreach (Card card in cardsInHand)
@@ -127,6 +147,9 @@ public class LocalPlayer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets all cards in hand to be usable/unusable after a delay of delaySeconds
+    /// </summary>
     IEnumerator SetCardsUsable(bool usable, float delaySeconds)
     {
         yield return new WaitForSeconds(delaySeconds);
@@ -136,7 +159,9 @@ public class LocalPlayer : MonoBehaviour
         }
     }
 
-    [Button]
+    /// <summary>
+    /// Sort the current hand of this player.
+    /// </summary>
     public void SortDeck()
     {
         List<(int, Card)> intCards = new();
@@ -175,6 +200,9 @@ public class LocalPlayer : MonoBehaviour
         MoveCenterCardDeck(true);
     }
 
+    /// <summary>
+    /// When this player plays a card.
+    /// </summary>
     public void PlayCard(Card card)
     {
         if (CheckCardCanBePlayed(card.CardType))
@@ -202,6 +230,10 @@ public class LocalPlayer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// When another player played a card.
+    /// </summary>
+    /// <param name="player">Player index starting at 0</param>
     public void PlayerPlayedCard(int player, string card)
     {
         if (isThisPlayerTurn) return;
@@ -211,21 +243,67 @@ public class LocalPlayer : MonoBehaviour
         switch (other)
         {
             case 1:
-                position = player3Pos.position;
+                position = player4.transform.position;
                 break;
             case 2:
-                position = player2Pos.position;
+                position = player3.transform.position;
                 break;
             case 3:
-                position = player1Pos.position;
+                position = player2.transform.position;
                 break;
         }
 
         Card cardObject = Instantiate(cardSprites.CardPrefab, position, Quaternion.identity).GetComponent<Card>();
         cardObject.name = "playedCard " + card;
         DoMovePlayedCard(cardObject, card);
+        ChangePlayerCardCount(player, -1);
     }
 
+    /// <summary>
+    /// Draws cards to the hand of another player.
+    /// </summary>
+    /// <param name="player">Player index starting at 0.</param>
+    public IEnumerator PlayerDrawCards(int player, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            GameObject card = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity);
+            card.transform.DOMove(GetOtherPlayerHandPosition(player), .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() => 
+            {
+                ChangePlayerCardCount(player, 1);
+                Destroy(card); 
+            });
+            yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds);
+        }
+    }
+
+    /// <summary>
+    /// Gets the hand position of the player index.
+    /// </summary>
+    /// <param name="player">Player index starting at 0.</param>
+    Vector3 GetOtherPlayerHandPosition(int player)
+    {
+        Vector3 position = cardStack.position;
+        int thisPlayerId = client.playerID + 1;
+        int other = thisPlayerId - player > 0 ? thisPlayerId - player : 4 + (thisPlayerId - player);
+        switch (other)
+        {
+            case 1:
+                position = player4.transform.position;
+                break;
+            case 2:
+                position = player3.transform.position;
+                break;
+            case 3:
+                position = player2.transform.position;
+                break;
+        }
+        return position;
+    }
+
+    /// <summary>
+    /// Processes the turn change.
+    /// </summary>
     public void OnChangeTurn(int playerTurn, int thisPlayerID)
     {
         if (playerTurn - 1 == thisPlayerID)
@@ -240,6 +318,9 @@ public class LocalPlayer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Checks whether a card can be played.
+    /// </summary>
     bool CheckCardCanBePlayed(string card)
     {
         if (currentCard == null) return true;
@@ -247,5 +328,37 @@ public class LocalPlayer : MonoBehaviour
         if (currentCard.CardType[0] == card[0]) return true;
         if (currentCard.CardType.Remove(0, 1) == card.Remove(0, 1)) return true;
         return false;
+    }
+
+    /// <summary>
+    /// Sets the name of the other players.
+    /// </summary>
+    public void SetOtherPlayers()
+    {
+        player2.SetPlayerName("Player " + (client.playerID + 2 > 4 ? Mathf.Abs(4 - (client.playerID + 2)) : client.playerID + 2));
+        player3.SetPlayerName("Player " + (client.playerID + 3 > 4 ? Mathf.Abs(4 - (client.playerID + 3)) : client.playerID + 3));
+        player4.SetPlayerName("Player " + (client.playerID + 4 > 4 ? Mathf.Abs(4 - (client.playerID + 4)) : client.playerID + 4));
+    }
+
+    /// <summary>
+    /// Changes the card count on another player by player id.
+    /// </summary>
+    /// <param name="player">Player id starting at 0.</param>
+    void ChangePlayerCardCount(int player, int change)
+    {
+        int thisPlayerId = client.playerID + 1;
+        int other = thisPlayerId - player > 0 ? thisPlayerId - player : 4 + (thisPlayerId - player);
+        switch (other)
+        {
+            case 1:
+                player4.ChangeCardCount(change);
+                break;
+            case 2:
+                player3.ChangeCardCount(change);
+                break;
+            case 3:
+                player2.ChangeCardCount(change);
+                break;
+        }
     }
 }
