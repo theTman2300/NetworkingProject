@@ -62,7 +62,7 @@ public class Client : MonoBehaviour
         dispatcher.AddListener("/OnChangePlayerTurn", ChangePlayerTurn, OSCUtil.INT);
         dispatcher.AddListener("/SetDrawnCards", DrawCards, OSCUtil.STRING);
         dispatcher.AddListener("/PlayerDrawCards", PlayerDrawCard, OSCUtil.INT, OSCUtil.INT);
-
+        dispatcher.AddListener("/PlayerChooseJokerSuit", PlayerChooseJokerSuit, OSCUtil.STRING);
 
     }
 
@@ -114,6 +114,12 @@ public class Client : MonoBehaviour
 		StartCoroutine(localPlayer.PlayerDrawCards(player, cardCount));
 	}
 
+	void PlayerChooseJokerSuit(OSCMessageIn message, IPEndPoint remote)
+	{
+		string suit = message.ReadString();
+		localPlayer.PlayerChoseJokerSuit(suit);
+	}
+
     // ----- Outgoing RPCs (called from Controller):
 	public void PlayCard(int cardIndex)
 	{
@@ -128,9 +134,9 @@ public class Client : MonoBehaviour
 
     }
 
-	public void ResetRpc()
+	public void ChooseJokerSuit(string suit)
 	{
-		OSCMessageOut message = new OSCMessageOut("/Reset");
+		OSCMessageOut message = new OSCMessageOut("/ChooseJokerSuit").AddString(suit);
         connection.Send(message.GetBytes());
     }
 }

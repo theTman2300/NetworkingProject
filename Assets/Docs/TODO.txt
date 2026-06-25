@@ -1,6 +1,9 @@
 Assign player round (for example say to player 1 that it's their turn and also to the other players that it's player 1's turn)
 (make sure to check incoming card plays to be from the correct player)
 
+
+Joker functionality
+
 On player whose turn it is:
 
 After pressing a card:

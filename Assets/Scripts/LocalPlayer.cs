@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -19,6 +20,10 @@ public class LocalPlayer : MonoBehaviour
     [Header("Turn Indicator")]
     [SerializeField] Transform turnIndicator;
     [SerializeField] Transform turnIndicatorPos;
+    [Header("Joker")]
+    [SerializeField] TextMeshPro jokerText; //used for showing the suit chosen for the joker
+    [SerializeField] GameObject jokerChoice;
+
 
     Client client;
     CardSprites cardSprites;
@@ -30,6 +35,10 @@ public class LocalPlayer : MonoBehaviour
     Card currentCard; //the card currently on the table
     int playedCardCounter = 0;
     bool isThisPlayerTurn = false;
+
+    Card jokerToBePlayed;
+    string jokerSuit = "";
+    bool isNewJoker = false;
 
     void Start()
     {
@@ -212,6 +221,8 @@ public class LocalPlayer : MonoBehaviour
     {
         if (CheckCardCanBePlayed(card.CardType))
         {
+            jokerSuit = "";
+            jokerText.text = "";
             Debug.Log("Played card: " + card.CardType + "  of index: " + card.CardIndex);
             card.PlayCard();
             card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = (playedCardCounter + 10) * 10;
@@ -226,13 +237,34 @@ public class LocalPlayer : MonoBehaviour
                 if (restCard.CardIndex > card.CardIndex) restCard.CardIndex--;
             }
 
-            client.PlayCard(card.CardIndex);
             MoveCenterCardDeck(true);
+            if (card.CardType == "J")
+            {
+                jokerToBePlayed = card;
+                StartJokerChoice();
+                return;
+            }
+            client.PlayCard(card.CardIndex);
         }
         else
         {
             card.DownCard();
         }
+    }
+
+    void StartJokerChoice()
+    {
+        SetCardsUsable(false);
+        jokerChoice.SetActive(true);
+    }
+
+    public void ChooseJokerSuite(string suit)
+    {
+        jokerChoice.SetActive(false);
+        client.PlayCard(jokerToBePlayed.CardIndex);
+        client.ChooseJokerSuit(suit);
+        jokerToBePlayed = null;
+        isThisPlayerTurn = false;
     }
 
     /// <summary>
@@ -242,6 +274,8 @@ public class LocalPlayer : MonoBehaviour
     public void PlayerPlayedCard(int player, string card)
     {
         if (isThisPlayerTurn) return;
+        jokerSuit = "";
+        jokerText.text = "";
         Vector3 position = cardStack.position;
         int thisPlayerId = client.playerID + 1;
         int other = thisPlayerId - player > 0 ? thisPlayerId - player : 4 + (thisPlayerId - player);
@@ -264,11 +298,33 @@ public class LocalPlayer : MonoBehaviour
         ChangePlayerCardCount(player, -1);
     }
 
+    public void PlayerChoseJokerSuit(string suit)
+    {
+        jokerSuit = suit;
+        isNewJoker = true;
+        switch (suit)
+        {
+            case "C":
+                jokerText.text = "Clubs";
+                break;
+            case "S":
+                jokerText.text = "Spades";
+                break;
+            case "H":
+                jokerText.text = "Hearts";
+                break;
+            case "D":
+                jokerText.text = "Diamonds";
+                break;
+        }
+    }
+
     /// <summary>
     /// Sends the request to draw a card to the server.
     /// </summary>
     public void PlayerDrawNewCard()
     {
+        isNewJoker = false;
         if (!isThisPlayerTurn) return;
         client.DrawCard();
         isThisPlayerTurn = false;
@@ -354,6 +410,14 @@ public class LocalPlayer : MonoBehaviour
     bool CheckCardCanBePlayed(string card)
     {
         if (currentCard == null) return true;
+        if (isNewJoker && card != "J") return false;
+        if (jokerSuit != "")
+        {
+            if (jokerSuit == card[0].ToString()) return true;
+            else if (card == "J") return true;
+            else return false;
+        }
+
         if (card == "J") return true;
         if (currentCard.CardType[0] == card[0]) return true;
         if (currentCard.CardType.Remove(0, 1) == card.Remove(0, 1)) return true;

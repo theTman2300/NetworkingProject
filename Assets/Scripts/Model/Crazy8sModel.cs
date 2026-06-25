@@ -11,6 +11,7 @@ public class Crazy8sModel
     public event Action<int> OnChangePlayerTurn;
     public event Action<int, string> OnPlayerPlayedCard;
     public event Action<int, string> OnPlayerDrawCards;
+    public event Action<string> OnPlayerChooseJokerSuit;
 
     public const int NumPlayers = 4;
     public const int StartCardCount = 7;
@@ -20,6 +21,9 @@ public class Crazy8sModel
     Dictionary<int, string> playerCards = new();
     int currentPlayer = 1;
     string currentCard = "";
+    bool expectingJokerSuitChoice = false;
+    string jokerSuitChoice = "";
+    int jokerCounter = 0;
 
     public void Initialize()
     {
@@ -42,7 +46,7 @@ public class Crazy8sModel
     /// </summary>
     void FillDeck()
     {
-        cardDeck = new List<string>( new string[54] ); //52 normal cards + 2 jokers
+        cardDeck = new List<string>(new string[54]); //52 normal cards + 2 jokers
 
         //C clubs S spades H hearts D diamonds     1 ace     1-10 normal    11-13 jack queen king     J joker
         for (int i = 0; i < 13; i++)
@@ -101,6 +105,7 @@ public class Crazy8sModel
     /// </summary>
     void SetPlayerStartingCards()
     {
+        //sets player hands
         for (int i = 0; i < NumPlayers; i++)
         {
             string playerCardsString = "";
@@ -119,15 +124,22 @@ public class Crazy8sModel
             playerCards[i] = playerCardsString;
             OnSetCardsInHand(i, playerCardsString);
         }
-        OnSetFirstCard.Invoke(cardDeck[0]);
 
+        //sets the first card
+        bool firstCardValid = false;
+        while (!firstCardValid)
+        {
+            if (cardDeck[0] == "J") ShuffleDeck();
+        }
         if (cardDeck.Count == 0)
         {
             FillDeck();
             ShuffleDeck();
         }
+        OnSetFirstCard.Invoke(cardDeck[0]);
         currentCard = cardDeck[0];
         cardDeck.RemoveAt(0);
+
         OnChangePlayerTurn.Invoke(1);
         currentPlayer = 1;
     }
@@ -158,6 +170,28 @@ public class Crazy8sModel
         playerCards[player - 1] = newPlayerCards;
         OnPlayerPlayedCard.Invoke(player, card);
 
+        if (card == "J")
+        {
+            expectingJokerSuitChoice = true;
+            jokerCounter++;
+            return;
+        }
+
+        NextPlayerTurn();
+    }
+
+    public void ChooseJokerSuit(int player, string suit)
+    {
+        if (player != currentPlayer || !expectingJokerSuitChoice)
+        {
+            Debug.Log("someone cheated/error occured");
+            return;
+        }
+        expectingJokerSuitChoice = false;
+
+        OnPlayerChooseJokerSuit.Invoke(suit);
+        jokerSuitChoice = suit;
+
         NextPlayerTurn();
     }
 
@@ -174,18 +208,29 @@ public class Crazy8sModel
             return;
         }
 
-        if (cardDeck.Count == 0)
+        int cardAmount = 1;
+        if (jokerCounter > 0)
         {
-            FillDeck();
-            ShuffleDeck();
+            cardAmount = jokerCounter * 5;
+            jokerCounter = 0;
         }
-        string card = cardDeck[0];
-        cardDeck.RemoveAt(0);
-        OnPlayerDrawCards.Invoke(playerID, card);
 
-        List<string> currentPlayerCards = CardStringToArray(playerCards[playerID - 1]).ToList();
-        currentPlayerCards.Add(card);
-        playerCards[playerID - 1] = CardArrayToString(currentPlayerCards.ToArray());
+        string cardsString = "";
+        for (int i = 0; i < cardAmount; i++)
+        {
+            if (cardDeck.Count == 0)
+            {
+                FillDeck();
+                ShuffleDeck();
+            }
+            cardsString += cardDeck[0] + " ";
+            List<string> currentPlayerCards = CardStringToArray(playerCards[playerID - 1]).ToList();
+            currentPlayerCards.Add(cardDeck[0]);
+            playerCards[playerID - 1] = CardArrayToString(currentPlayerCards.ToArray());
+            cardDeck.RemoveAt(0);
+        }
+        cardsString.Trim();
+        OnPlayerDrawCards.Invoke(playerID, cardsString);
         NextPlayerTurn();
     }
 
@@ -198,9 +243,27 @@ public class Crazy8sModel
         OnChangePlayerTurn.Invoke(currentPlayer);
     }
 
+    void SkipNextPlayerTurn()
+    {
+        currentPlayer = currentPlayer + 2 > NumPlayers ? currentPlayer + 2 - NumPlayers : currentPlayer + 2;
+        OnChangePlayerTurn.Invoke(currentPlayer);
+    }
+
     bool CheckCardCanBePlayed(string card)
     {
         if (currentCard == null) return true;
+        if (jokerCounter != 0 && card != "J") return false;
+
+
+        if (jokerSuitChoice != "")
+        {
+            string suit = jokerSuitChoice;
+            jokerSuitChoice = "";
+            if (suit == card[0].ToString()) return true;
+            else if (card == "J") return true;
+            else return false;
+        }
+
         if (card == "J") return true;
         if (currentCard[0] == card[0]) return true;
         if (currentCard.Remove(0, 1) == card.Remove(0, 1)) return true;

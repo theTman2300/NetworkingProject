@@ -110,6 +110,7 @@ public class Server : MonoBehaviour
 		model.OnPlayerPlayedCard += PlayerPlayedCard;
 		model.OnChangePlayerTurn += ChangePlayerTurn;
 		model.OnPlayerDrawCards += PlayerDrawCards;
+		model.OnPlayerChooseJokerSuit += PlayerChooseJokerSuit;
 
         // (Note: we try to keep the game code independent from networking details.)
 
@@ -120,6 +121,7 @@ public class Server : MonoBehaviour
         //  messages that do not satisfy the expected signature (=parameter list):
         dispatcher.AddListener("/PlayCard", PlayCardRpc, OSCUtil.INT);
         dispatcher.AddListener("/DrawCard", DrawCardRpc);
+        dispatcher.AddListener("/ChooseJokerSuit", ChooseJokerSuitRpc, OSCUtil.STRING);
     }
 
 	// ----- Handle incoming RPCs(called by dispatcher) :
@@ -137,11 +139,18 @@ public class Server : MonoBehaviour
 		model.PlayerDrawCard(player);
     }
 
+	void ChooseJokerSuitRpc(OSCMessageIn message, IPEndPoint remote)
+	{
+        int player = PlayerFromRemote(remote);
+		string suit = message.ReadString();
+		model.ChooseJokerSuit(player, suit);
+    }
+
     /// <summary>
     /// gets the playerID atached to the tcpnetworkconnection that has the same remote as the one put in.
     /// Used for finding which player send an Rcp
     /// </summary>
-    /// <returns>PlayerID when a match is found and 0 when no match is found.</returns>
+    /// <returns>PlayerID when a match is found and 0 when no match is found. (good playerID's start at 1)</returns>
     int PlayerFromRemote(IPEndPoint remote)
 	{
 		foreach(TcpNetworkConnection connection in playerIDs.Keys)
@@ -217,5 +226,11 @@ public class Server : MonoBehaviour
 		OSCMessageOut message = new OSCMessageOut("/PlayerDrawCards").AddInt(player).AddInt(cards.Trim().Split(' ').Length);
 		Broadcast(message.GetBytes());
 	}
+
+	public void PlayerChooseJokerSuit(string suit)
+	{
+        OSCMessageOut message = new OSCMessageOut("/PlayerChooseJokerSuit").AddString(suit);
+		Broadcast(message.GetBytes());
+    }
 
 }
