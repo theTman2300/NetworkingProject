@@ -130,6 +130,7 @@ public class Crazy8sModel
         while (!firstCardValid)
         {
             if (cardDeck[0] == "J") ShuffleDeck();
+            else firstCardValid = true;
         }
         if (cardDeck.Count == 0)
         {
