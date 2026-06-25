@@ -273,7 +273,7 @@ public class LocalPlayer : MonoBehaviour
     /// <param name="player">Player index starting at 0</param>
     public void PlayerPlayedCard(int player, string card)
     {
-        if (isThisPlayerTurn) return;
+        if (isThisPlayerTurn || client.playerID == player) return;
         jokerSuit = "";
         jokerText.text = "";
         Vector3 position = cardStack.position;
@@ -324,7 +324,6 @@ public class LocalPlayer : MonoBehaviour
     /// </summary>
     public void PlayerDrawNewCard()
     {
-        isNewJoker = false;
         if (!isThisPlayerTurn) return;
         client.DrawCard();
         isThisPlayerTurn = false;
@@ -337,6 +336,7 @@ public class LocalPlayer : MonoBehaviour
     /// <param name="player">Player index starting at 1.</param>
     public IEnumerator PlayerDrawCards(int player, int count)
     {
+        isNewJoker = false;
         for (int i = 0; i < count; i++)
         {
             GameObject card = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity);
