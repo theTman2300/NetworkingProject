@@ -270,10 +270,11 @@ public class LocalPlayer : MonoBehaviour
     /// <summary>
     /// When another player played a card.
     /// </summary>
-    /// <param name="player">Player index starting at 0</param>
+    /// <param name="player">Player index starting at 1</param>
     public void PlayerPlayedCard(int player, string card)
     {
-        if (isThisPlayerTurn || client.playerID == player) return;
+        print("Is turn: " + isThisPlayerTurn + "   this playerID: " + client.playerID + "   playerPlayingCard: " + player);
+        if (isThisPlayerTurn || client.playerID == player - 1) return;
         jokerSuit = "";
         jokerText.text = "";
         Vector3 position = cardStack.position;
