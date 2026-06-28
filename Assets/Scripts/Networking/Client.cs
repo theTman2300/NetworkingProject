@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// The client is the class that lets game code (Controller and View classes) communicate with 
@@ -44,6 +45,11 @@ public class Client : MonoBehaviour
         dispatcher.HandlePacket(packet, remote);
     }
 
+    public void EndConnection()
+    {
+        connection.Close();
+    }
+
     void Update()
     {
         // Check for incoming packets, and deal with them:
@@ -51,7 +57,12 @@ public class Client : MonoBehaviour
         {
             HandlePacket(connection.GetPacket(), connection.Remote);
         }
-        // TODO: disconnect handling
+
+        if (connection.Status == ConnectionStatus.Disconnected)
+        {
+            SessionInfo.instance.HasDisconnected = true;
+            SceneManager.LoadScene("MainMenu");
+        }
     }
 
     void Initialize()
@@ -64,6 +75,8 @@ public class Client : MonoBehaviour
         dispatcher.AddListener("/SetDrawnCards", DrawCards, OSCUtil.STRING);
         dispatcher.AddListener("/PlayerDrawCards", PlayerDrawCard, OSCUtil.INT, OSCUtil.INT);
         dispatcher.AddListener("/PlayerChooseSuit", PlayerChooseSuit, OSCUtil.STRING);
+        dispatcher.AddListener("/GameFull", GameFull);
+        dispatcher.AddListener("/OtherPlayerDisconnected", OtherPlayerDisconnected);
 
     }
 
@@ -119,6 +132,18 @@ public class Client : MonoBehaviour
     {
         string suit = message.ReadString();
         localPlayer.PlayerChoseSuit(suit);
+    }
+
+    void GameFull(OSCMessageIn message, IPEndPoint remote)
+    {
+        SessionInfo.instance.GameWasFull = true;
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    void OtherPlayerDisconnected(OSCMessageIn message, IPEndPoint remote)
+    {
+        SessionInfo.instance.OtherPlayerDisconnected = true;
+        SceneManager.LoadScene("MainMenu");
     }
 
     #endregion
