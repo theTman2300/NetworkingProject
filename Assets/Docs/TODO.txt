@@ -8,11 +8,11 @@ jack card (suit change)
 
 2 card (next player draws 2 cards (same as that part ofjoker))
 
-
-TODO:
-
 8 scard (skip next player)
 
 ace (switch direction)
+
+
+TODO:
 
 7 card (throw in another card)

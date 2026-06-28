@@ -20,9 +20,15 @@ public class Crazy8sModel
     List<string> cardDeck;
     Dictionary<int, string> playerCards = new();
     int currentPlayer = 1;
+
     string currentCard = "";
+    bool rotationIsClockwise = true;
+
+    //suit choice
     bool expectingSuitChoice = false;
     string suitChoice = "";
+
+    //card drawing
     int jokerCounter = 0;
     int card2Counter = 0; //counter for the 2 cards
 
@@ -195,15 +201,20 @@ public class Crazy8sModel
             return;
         }
 
-        if (card.Remove(0, 1) == "2")
+        if (card.Remove(0, 1) == "2") //2 card (next player grab 2 cards)
         {
             card2Counter++;
         }
 
-        if (card.Remove(0, 1) == "8")
+        if (card.Remove(0, 1) == "8") //8 card (next player skip turn)
         {
             SkipNextPlayerTurn();
             return;
+        }
+
+        if (card.Remove(0, 1) == "1") //Ace card (switch direction of play)
+        {
+            rotationIsClockwise = !rotationIsClockwise;
         }
 
         NextPlayerTurn();
@@ -273,13 +284,21 @@ public class Crazy8sModel
     /// </summary>
     void NextPlayerTurn()
     {
-        currentPlayer = currentPlayer + 1 > NumPlayers ? 1 : currentPlayer + 1;
+        if (rotationIsClockwise)
+            currentPlayer = currentPlayer + 1 > NumPlayers ? 1 : currentPlayer + 1;
+        else
+            currentPlayer = currentPlayer - 1 < 1 ? NumPlayers : currentPlayer - 1;
+
         OnChangePlayerTurn.Invoke(currentPlayer);
     }
 
     void SkipNextPlayerTurn()
     {
-        currentPlayer = currentPlayer + 2 > NumPlayers ? currentPlayer + 2 - NumPlayers : currentPlayer + 2;
+        if (rotationIsClockwise)
+            currentPlayer = currentPlayer + 2 > NumPlayers ? currentPlayer + 2 - NumPlayers : currentPlayer + 2;
+        else
+            currentPlayer = currentPlayer - 2 < 1 ? currentPlayer - 2 + NumPlayers : currentPlayer - 2;
+
         OnChangePlayerTurn.Invoke(currentPlayer);
     }
 
