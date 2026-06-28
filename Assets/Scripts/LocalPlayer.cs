@@ -286,7 +286,11 @@ public class LocalPlayer : MonoBehaviour
     /// <param name="player">Player index starting at 1</param>
     public void PlayerPlayedCard(int player, string card)
     {
-        print("Is turn: " + isThisPlayerTurn + "   this playerID: " + client.playerID + "   playerPlayingCard: " + player);
+        if (card == "J")
+        {
+            isNewJoker = true;
+        }
+
         if (isThisPlayerTurn || client.playerID == player - 1) return;
         chosenCarduit = "";
         suitText.text = "";
@@ -315,7 +319,6 @@ public class LocalPlayer : MonoBehaviour
     public void PlayerChoseSuit(string suit)
     {
         chosenCarduit = suit;
-        isNewJoker = true;
         switch (suit)
         {
             case "C":
@@ -425,6 +428,7 @@ public class LocalPlayer : MonoBehaviour
     {
         if (currentCard == null) return true;
         if (isNewJoker && card != "J") return false;
+
         if (chosenCarduit != "")
         {
             if (chosenCarduit == card[0].ToString()) return true;

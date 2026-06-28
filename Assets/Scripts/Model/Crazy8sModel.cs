@@ -46,8 +46,8 @@ public class Crazy8sModel
     /// </summary>
     void FillDeck()
     {
-        //cardDeck = new List<string>(new string[54]); //52 normal cards + 2 jokers
-        cardDeck = new List<string>(new string[60]); //52 normal cards + 2 jokers
+        cardDeck = new List<string>(new string[54]); //52 normal cards + 2 jokers
+        //cardDeck = new List<string>(new string[60]); //52 normal cards + 2 jokers
 
         //C clubs S spades H hearts D diamonds     1 ace     1-10 normal    11-13 jack queen king     J joker
         for (int i = 0; i < 13; i++)
@@ -71,12 +71,12 @@ public class Crazy8sModel
 
 
         //these are extra
-        cardDeck[54] = "J";
-        cardDeck[55] = "J";
-        cardDeck[56] = "J";
-        cardDeck[57] = "J";
-        cardDeck[58] = "J";
-        cardDeck[59] = "J";
+        //cardDeck[54] = "J";
+        //cardDeck[55] = "J";
+        //cardDeck[56] = "J";
+        //cardDeck[57] = "J";
+        //cardDeck[58] = "J";
+        //cardDeck[59] = "J";
     }
 
     /// <summary>
@@ -270,7 +270,6 @@ public class Crazy8sModel
     {
         if (currentCard == null) return true;
         if (jokerCounter != 0 && card != "J") return false;
-
 
         if (suitChoice != "")
         {
