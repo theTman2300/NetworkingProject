@@ -48,10 +48,12 @@ public class CardAssets : MonoBehaviour
         return cardBack;
     }
 
+    /// <summary>
+    /// Plays a random card sound.
+    /// </summary>
     public void PlayCardSound()
     {
         AudioClip randomClip = cardSounds[Random.Range(0, cardSounds.Length)];
-        audioSource.clip = randomClip;
-        audioSource.Play();
+        audioSource.PlayOneShot(randomClip);
     }
 }

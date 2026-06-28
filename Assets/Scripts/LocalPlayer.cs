@@ -23,7 +23,8 @@ public class LocalPlayer : MonoBehaviour
     [Header("Joker")]
     [SerializeField] TextMeshPro suitText; //used for showing the suit chosen for the joker
     [SerializeField] GameObject suitChoice;
-
+    [Space]
+    [SerializeField] TextMeshProUGUI thisPlayerName;
 
     Client client;
     CardAssets cardAssets;
@@ -49,6 +50,14 @@ public class LocalPlayer : MonoBehaviour
         cardsInHand = new();
         cardSize = cardAssets.GetCardBackSprite().bounds.size.x;
     }
+
+    public void StartConnected()
+    {
+        SetOtherPlayers();
+        thisPlayerName.text = $"Player {client.playerID + 1} (you)";
+    }
+
+    #region card movement
 
     /// <summary>
     /// Creates/draws cards to the hand of this player.
@@ -90,6 +99,7 @@ public class LocalPlayer : MonoBehaviour
     /// </summary>
     void DoMoveDrawnCard(Card card, string cardString)
     {
+        cardAssets.PlayCardSound();
         card.IsPlayerCard = true;
         card.CardType = cardString;
         card.CardIndex = cardsInHand.Count - 1;
@@ -111,6 +121,7 @@ public class LocalPlayer : MonoBehaviour
     /// </summary>
     void DoMovePlayedCard(Card card, string cardString)
     {
+        cardAssets.PlayCardSound();
         card.IsPlayerCard = true;
         card.CardType = cardString;
         card.CanBeUsed = false;
@@ -150,6 +161,10 @@ public class LocalPlayer : MonoBehaviour
         if (finishedDealingCards && isThisPlayerTurn && !isChoosingSuit)
             StartCoroutine(SetCardsUsable(true, .5f)); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
     }
+
+    #endregion
+
+    #region hand
 
     /// <summary>
     /// Sets all cards in hand to be usable/unusable.
@@ -213,8 +228,16 @@ public class LocalPlayer : MonoBehaviour
             intCards[i].Item2.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = i;
         }
 
+        //play a few different sounds
+        cardAssets.PlayCardSound();
+        cardAssets.PlayCardSound();
+        cardAssets.PlayCardSound();
         MoveCenterCardDeck(true);
     }
+
+    #endregion
+
+    #region this player
 
     /// <summary>
     /// When this player plays a card.
@@ -287,6 +310,43 @@ public class LocalPlayer : MonoBehaviour
     }
 
     /// <summary>
+    /// Sends the request to draw a card to the server.
+    /// </summary>
+    public void PlayerDrawNewCard()
+    {
+        if (!isThisPlayerTurn || isChoosingSuit) return;
+        client.DrawCard();
+        isThisPlayerTurn = false;
+        SetCardsUsable(false);
+    }
+
+    /// <summary>
+    /// Checks whether a card can be played.
+    /// </summary>
+    bool CheckCardCanBePlayed(string card)
+    {
+        if (currentCard == null) return true;
+        if (isNewJoker && card != "J") return false;
+        if (isNew2Card && card.Remove(0, 1) != "2") return false;
+
+        if (chosenCarduit != "")
+        {
+            if (chosenCarduit == card[0].ToString()) return true;
+            else if (card == "J") return true;
+            else return false;
+        }
+
+        if (card == "J") return true;
+        if (currentCard.CardType[0] == card[0]) return true;
+        if (currentCard.CardType.Remove(0, 1) == card.Remove(0, 1)) return true;
+        return false;
+    }
+
+    #endregion
+
+    #region other player
+
+    /// <summary>
     /// When another player played a card.
     /// </summary>
     /// <param name="player">Player index starting at 1</param>
@@ -348,17 +408,6 @@ public class LocalPlayer : MonoBehaviour
     }
 
     /// <summary>
-    /// Sends the request to draw a card to the server.
-    /// </summary>
-    public void PlayerDrawNewCard()
-    {
-        if (!isThisPlayerTurn || isChoosingSuit) return;
-        client.DrawCard();
-        isThisPlayerTurn = false;
-        SetCardsUsable(false);
-    }
-
-    /// <summary>
     /// Draws cards to the hand of another player.
     /// </summary>
     /// <param name="player">Player index starting at 1.</param>
@@ -404,58 +453,6 @@ public class LocalPlayer : MonoBehaviour
     }
 
     /// <summary>
-    /// Processes the turn change.
-    /// </summary>
-    /// <param name="playerTurn">Player ID whose Turn it is. Starting at 1.</param>
-    public void OnChangeTurn(int playerTurn)
-    {
-        if (playerTurn - 1 == client.playerID)
-        {
-            isThisPlayerTurn = true;
-            SetCardsUsable(true);
-            turnIndicator.DOScale(0, .2f).OnComplete(() =>
-            {
-                turnIndicator.position = turnIndicatorPos.position;
-                turnIndicator.DOScale(1, .2f);
-            });
-        }
-        else
-        {
-            isThisPlayerTurn = false;
-            SetCardsUsable(false);
-            Vector3 arrowPos = GetOtherPlayerHandPosition(playerTurn) + new Vector3(0, -1.3f, 0);
-            turnIndicator.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() => 
-            { 
-                turnIndicator.position = arrowPos;
-                turnIndicator.DOScale(1, .2f);
-            });
-            
-        }
-    }
-
-    /// <summary>
-    /// Checks whether a card can be played.
-    /// </summary>
-    bool CheckCardCanBePlayed(string card)
-    {
-        if (currentCard == null) return true;
-        if (isNewJoker && card != "J") return false;
-        if (isNew2Card && card.Remove(0, 1) != "2") return false;
-
-        if (chosenCarduit != "")
-        {
-            if (chosenCarduit == card[0].ToString()) return true;
-            else if (card == "J") return true;
-            else return false;
-        }
-
-        if (card == "J") return true;
-        if (currentCard.CardType[0] == card[0]) return true;
-        if (currentCard.CardType.Remove(0, 1) == card.Remove(0, 1)) return true;
-        return false;
-    }
-
-    /// <summary>
     /// Sets the name of the other players.
     /// </summary>
     public void SetOtherPlayers()
@@ -484,6 +481,38 @@ public class LocalPlayer : MonoBehaviour
             case 3:
                 player2.ChangeCardCount(change);
                 break;
+        }
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Processes the turn change.
+    /// </summary>
+    /// <param name="playerTurn">Player ID whose Turn it is. Starting at 1.</param>
+    public void OnChangeTurn(int playerTurn)
+    {
+        if (playerTurn - 1 == client.playerID)
+        {
+            isThisPlayerTurn = true;
+            SetCardsUsable(true);
+            turnIndicator.DOScale(0, .2f).OnComplete(() =>
+            {
+                turnIndicator.position = turnIndicatorPos.position;
+                turnIndicator.DOScale(1, .2f);
+            });
+        }
+        else
+        {
+            isThisPlayerTurn = false;
+            SetCardsUsable(false);
+            Vector3 arrowPos = GetOtherPlayerHandPosition(playerTurn) + new Vector3(0, -1.3f, 0);
+            turnIndicator.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() => 
+            { 
+                turnIndicator.position = arrowPos;
+                turnIndicator.DOScale(1, .2f);
+            });
+            
         }
     }
 }
