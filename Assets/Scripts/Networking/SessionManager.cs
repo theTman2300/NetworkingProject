@@ -38,9 +38,6 @@ public class SessionManager : MonoBehaviour {
 		Server server = GetComponent<Server>();
 		server.enabled = true;
 
-		//var boardOwner = FindFirstObjectByType<ModelHolder>();
-		//boardOwner.enabled = true;
-
 		IsServer = true;
 	}
 	void StartClient() {
@@ -53,5 +50,4 @@ public class SessionManager : MonoBehaviour {
 
 		IsClient = true;
 	}	
-	//end general code
 }
