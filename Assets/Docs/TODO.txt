@@ -6,13 +6,13 @@ Joker card (suit change and next player draws cards)
 
 jack card (suit change)
 
+2 card (next player draws 2 cards (same as that part ofjoker))
 
 
 TODO:
-2 card (next player draws 2 cards (same as that part ofjoker))
-
-ace (switch direction)
 
 8 scard (skip next player)
+
+ace (switch direction)
 
 7 card (throw in another card)

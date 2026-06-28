@@ -200,6 +200,12 @@ public class Crazy8sModel
             card2Counter++;
         }
 
+        if (card.Remove(0, 1) == "8")
+        {
+            SkipNextPlayerTurn();
+            return;
+        }
+
         NextPlayerTurn();
     }
 
