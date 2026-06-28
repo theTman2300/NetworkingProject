@@ -1,29 +1,18 @@
-Assign player round (for example say to player 1 that it's their turn and also to the other players that it's player 1's turn)
-(make sure to check incoming card plays to be from the correct player)
+Done:
+
+normal playing
+
+Joker card (suit change and next player draws cards)
+
+jack card (suit change)
 
 
-Joker functionality
 
-On player whose turn it is:
+TODO:
+2 card (next player draws 2 cards (same as that part ofjoker))
 
-After pressing a card:
-Check if a card can be played
-no: card back down and other card become active again
-yes: send card Play to server with the index of the card
+ace (switch direction)
 
-if no cards can be played:
-player uses draw card button, they draw a card and their turn ends.
+8 scard (skip next player)
 
-
-if on last card:
-player should press the last card button before playing a card.
-
-When last card button pressed (which can be pressed even if not last card to mess with the other players (cooldown maybe?)):
-other players see a pop up and some sound.
-
-When last card button not pressed but the player hould have:
-player draws 2 cards after they played their cards with some text stating that they shouldve pressed the button.
-
-
-Make sure that card drawing is visualized in the other players.
-Other players will look like a simple card stack with a number next to it indicating the amount of cards.
+7 card (throw in another card)

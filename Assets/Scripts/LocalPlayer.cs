@@ -40,6 +40,7 @@ public class LocalPlayer : MonoBehaviour
     bool isChoosingSuit = false;
     string chosenCarduit = "";
     bool isNewJoker = false;
+    bool isNew2Card = false;
 
     void Start()
     {
@@ -254,6 +255,11 @@ public class LocalPlayer : MonoBehaviour
                 return;
             }
 
+            //if (card.CardType.Remove(0, 1) == "2")
+            //{
+
+            //}
+
             MoveCenterCardDeck(true);
             client.PlayCard(card.CardIndex);
         }
@@ -289,6 +295,11 @@ public class LocalPlayer : MonoBehaviour
         if (card == "J")
         {
             isNewJoker = true;
+        }
+
+        if (card.Remove(0, 1) == "2")
+        {
+            isNew2Card = true;
         }
 
         if (isThisPlayerTurn || client.playerID == player - 1) return;
@@ -354,6 +365,7 @@ public class LocalPlayer : MonoBehaviour
     public IEnumerator PlayerDrawCards(int player, int count)
     {
         isNewJoker = false;
+        isNew2Card = false;
         for (int i = 0; i < count; i++)
         {
             GameObject card = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity);
@@ -428,6 +440,7 @@ public class LocalPlayer : MonoBehaviour
     {
         if (currentCard == null) return true;
         if (isNewJoker && card != "J") return false;
+        if (isNew2Card && card.Remove(0, 1) != "2") return false;
 
         if (chosenCarduit != "")
         {

@@ -24,6 +24,7 @@ public class Crazy8sModel
     bool expectingSuitChoice = false;
     string suitChoice = "";
     int jokerCounter = 0;
+    int card2Counter = 0; //counter for the 2 cards
 
     public void Initialize()
     {
@@ -194,6 +195,11 @@ public class Crazy8sModel
             return;
         }
 
+        if (card.Remove(0, 1) == "2")
+        {
+            card2Counter++;
+        }
+
         NextPlayerTurn();
     }
 
@@ -230,6 +236,11 @@ public class Crazy8sModel
         {
             cardAmount = jokerCounter * 5;
             jokerCounter = 0;
+        }
+        if (card2Counter > 0)
+        {
+            cardAmount = card2Counter * 2;
+            card2Counter = 0;
         }
 
         string cardsString = "";
@@ -270,6 +281,7 @@ public class Crazy8sModel
     {
         if (currentCard == null) return true;
         if (jokerCounter != 0 && card != "J") return false;
+        if (card2Counter != 0 && card.Remove(0, 1) != "2") return false;
 
         if (suitChoice != "")
         {
