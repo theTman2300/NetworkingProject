@@ -1,19 +1,28 @@
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class CardSprites : MonoBehaviour
+[RequireComponent(typeof(AudioSource))]
+public class CardAssets : MonoBehaviour
 {
     [SerializeField] public GameObject CardPrefab;
-    [Space]
+    [Header("Sprites")]
     [SerializeField] Sprite[] clubs;
     [SerializeField] Sprite[] spades;
     [SerializeField] Sprite[] hearts;
     [SerializeField] Sprite[] diamonds;
     [SerializeField] Sprite joker;
     [SerializeField] Sprite cardBack;
+    [Header("Sounds")]
+    [SerializeField] AudioClip[] cardSounds;
     [Space]
     [SerializeField] public float DrawCardDelaySeconds = .3f;
 
+    AudioSource audioSource;
+
+    private void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     public Sprite GetCardSpriteByString(string card)
     {
@@ -37,5 +46,12 @@ public class CardSprites : MonoBehaviour
     public Sprite GetCardBackSprite()
     {
         return cardBack;
+    }
+
+    public void PlayCardSound()
+    {
+        AudioClip randomClip = cardSounds[Random.Range(0, cardSounds.Length)];
+        audioSource.clip = randomClip;
+        audioSource.Play();
     }
 }

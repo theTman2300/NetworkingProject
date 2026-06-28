@@ -26,7 +26,7 @@ public class LocalPlayer : MonoBehaviour
 
 
     Client client;
-    CardSprites cardSprites;
+    CardAssets cardAssets;
 
     float cardSize;
     float cardDistance;
@@ -45,9 +45,9 @@ public class LocalPlayer : MonoBehaviour
     void Start()
     {
         client = FindFirstObjectByType<Client>();
-        cardSprites = FindFirstObjectByType<CardSprites>();
+        cardAssets = FindFirstObjectByType<CardAssets>();
         cardsInHand = new();
-        cardSize = cardSprites.GetCardBackSprite().bounds.size.x;
+        cardSize = cardAssets.GetCardBackSprite().bounds.size.x;
     }
 
     /// <summary>
@@ -58,12 +58,12 @@ public class LocalPlayer : MonoBehaviour
     {
         foreach (string card in cards)
         {
-            Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
+            Card cardObject = Instantiate(cardAssets.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
             cardObject.transform.position = new Vector3(cardObject.transform.position.x, cardObject.transform.position.y, cardsInHand.Count * -.1f);
             cardObject.name = "card " + cardsInHand.Count;
             cardsInHand.Add(cardObject);
             DoMoveDrawnCard(cardObject, card);
-            yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds);
+            yield return new WaitForSeconds(cardAssets.DrawCardDelaySeconds);
 
         }
         finishedDealingCards = true;
@@ -76,8 +76,8 @@ public class LocalPlayer : MonoBehaviour
     public IEnumerator SetFirstCard(string card)
     {
         yield return new WaitUntil(() => finishedDealingCards);
-        yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds * 1.6f);
-        Card cardObject = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
+        yield return new WaitForSeconds(cardAssets.DrawCardDelaySeconds * 1.6f);
+        Card cardObject = Instantiate(cardAssets.CardPrefab, cardStack.position, Quaternion.identity).GetComponent<Card>();
         cardObject.name = "firstCard";
         DoMovePlayedCard(cardObject, card);
         yield return new WaitForSeconds(.5f);
@@ -96,7 +96,7 @@ public class LocalPlayer : MonoBehaviour
         card.CanBeUsed = false;
         card.transform.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() =>
         {
-            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardSprites.GetCardSpriteByString(cardString);
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardAssets.GetCardSpriteByString(cardString);
             card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = cardsInHand.Count;
             card.transform.DOScale(new Vector3(1, 1, 1), .2f);
         });
@@ -116,7 +116,7 @@ public class LocalPlayer : MonoBehaviour
         card.CanBeUsed = false;
         card.transform.DOScale(new Vector3(0, 1, 1), .2f).OnComplete(() =>
         {
-            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardSprites.GetCardSpriteByString(cardString);
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardAssets.GetCardSpriteByString(cardString);
             card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = (playedCardCounter + 10) * 10;
             playedCardCounter++;
             card.transform.DOScale(new Vector3(1, 1, 1), .2f);
@@ -321,7 +321,7 @@ public class LocalPlayer : MonoBehaviour
                 break;
         }
 
-        Card cardObject = Instantiate(cardSprites.CardPrefab, position, Quaternion.identity).GetComponent<Card>();
+        Card cardObject = Instantiate(cardAssets.CardPrefab, position, Quaternion.identity).GetComponent<Card>();
         cardObject.name = "playedCard " + card;
         DoMovePlayedCard(cardObject, card);
         ChangePlayerCardCount(player, -1);
@@ -368,13 +368,13 @@ public class LocalPlayer : MonoBehaviour
         isNew2Card = false;
         for (int i = 0; i < count; i++)
         {
-            GameObject card = Instantiate(cardSprites.CardPrefab, cardStack.position, Quaternion.identity);
+            GameObject card = Instantiate(cardAssets.CardPrefab, cardStack.position, Quaternion.identity);
             card.transform.DOMove(GetOtherPlayerHandPosition(player), .5f).SetEase(Ease.OutBack, 1.3f).OnComplete(() =>
             {
                 ChangePlayerCardCount(player, 1);
                 Destroy(card);
             });
-            yield return new WaitForSeconds(cardSprites.DrawCardDelaySeconds);
+            yield return new WaitForSeconds(cardAssets.DrawCardDelaySeconds);
         }
     }
 
