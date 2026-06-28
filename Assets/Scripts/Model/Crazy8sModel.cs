@@ -11,7 +11,7 @@ public class Crazy8sModel
     public event Action<int> OnChangePlayerTurn;
     public event Action<int, string> OnPlayerPlayedCard;
     public event Action<int, string> OnPlayerDrawCards;
-    public event Action<string> OnPlayerChooseJokerSuit;
+    public event Action<string> OnPlayerChooseSuit;
 
     public const int NumPlayers = 4;
     public const int StartCardCount = 7;
@@ -21,8 +21,8 @@ public class Crazy8sModel
     Dictionary<int, string> playerCards = new();
     int currentPlayer = 1;
     string currentCard = "";
-    bool expectingJokerSuitChoice = false;
-    string jokerSuitChoice = "";
+    bool expectingSuitChoice = false;
+    string suitChoice = "";
     int jokerCounter = 0;
 
     public void Initialize()
@@ -183,7 +183,7 @@ public class Crazy8sModel
 
         if (card == "J")
         {
-            expectingJokerSuitChoice = true;
+            expectingSuitChoice = true;
             jokerCounter++;
             return;
         }
@@ -191,17 +191,17 @@ public class Crazy8sModel
         NextPlayerTurn();
     }
 
-    public void ChooseJokerSuit(int player, string suit)
+    public void ChooseSuit(int player, string suit)
     {
-        if (player != currentPlayer || !expectingJokerSuitChoice)
+        if (player != currentPlayer || !expectingSuitChoice)
         {
             Debug.Log("someone cheated/error occured");
             return;
         }
-        expectingJokerSuitChoice = false;
+        expectingSuitChoice = false;
 
-        OnPlayerChooseJokerSuit.Invoke(suit);
-        jokerSuitChoice = suit;
+        OnPlayerChooseSuit.Invoke(suit);
+        suitChoice = suit;
 
         NextPlayerTurn();
     }
@@ -266,10 +266,10 @@ public class Crazy8sModel
         if (jokerCounter != 0 && card != "J") return false;
 
 
-        if (jokerSuitChoice != "")
+        if (suitChoice != "")
         {
-            string suit = jokerSuitChoice;
-            jokerSuitChoice = "";
+            string suit = suitChoice;
+            suitChoice = "";
             if (suit == card[0].ToString()) return true;
             else if (card == "J") return true;
             else return false;

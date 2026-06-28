@@ -110,7 +110,7 @@ public class Server : MonoBehaviour
 		model.OnPlayerPlayedCard += PlayerPlayedCard;
 		model.OnChangePlayerTurn += ChangePlayerTurn;
 		model.OnPlayerDrawCards += PlayerDrawCards;
-		model.OnPlayerChooseJokerSuit += PlayerChooseJokerSuit;
+		model.OnPlayerChooseSuit += PlayerChooseSuit;
 
         // (Note: we try to keep the game code independent from networking details.)
 
@@ -121,7 +121,7 @@ public class Server : MonoBehaviour
         //  messages that do not satisfy the expected signature (=parameter list):
         dispatcher.AddListener("/PlayCard", PlayCardRpc, OSCUtil.INT);
         dispatcher.AddListener("/DrawCard", DrawCardRpc);
-        dispatcher.AddListener("/ChooseJokerSuit", ChooseJokerSuitRpc, OSCUtil.STRING);
+        dispatcher.AddListener("/ChooseSuit", ChooseSuitRpc, OSCUtil.STRING);
     }
 
 	// ----- Handle incoming RPCs(called by dispatcher) :
@@ -139,11 +139,11 @@ public class Server : MonoBehaviour
 		model.PlayerDrawCard(player);
     }
 
-	void ChooseJokerSuitRpc(OSCMessageIn message, IPEndPoint remote)
+	void ChooseSuitRpc(OSCMessageIn message, IPEndPoint remote)
 	{
         int player = PlayerFromRemote(remote);
 		string suit = message.ReadString();
-		model.ChooseJokerSuit(player, suit);
+		model.ChooseSuit(player, suit);
     }
 
     /// <summary>
@@ -227,9 +227,9 @@ public class Server : MonoBehaviour
 		Broadcast(message.GetBytes());
 	}
 
-	public void PlayerChooseJokerSuit(string suit)
+	public void PlayerChooseSuit(string suit)
 	{
-        OSCMessageOut message = new OSCMessageOut("/PlayerChooseJokerSuit").AddString(suit);
+        OSCMessageOut message = new OSCMessageOut("/PlayerChooseSuit").AddString(suit);
 		Broadcast(message.GetBytes());
     }
 

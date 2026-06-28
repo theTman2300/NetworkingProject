@@ -21,8 +21,8 @@ public class LocalPlayer : MonoBehaviour
     [SerializeField] Transform turnIndicator;
     [SerializeField] Transform turnIndicatorPos;
     [Header("Joker")]
-    [SerializeField] TextMeshPro jokerText; //used for showing the suit chosen for the joker
-    [SerializeField] GameObject jokerChoice;
+    [SerializeField] TextMeshPro suitText; //used for showing the suit chosen for the joker
+    [SerializeField] GameObject suitChoice;
 
 
     Client client;
@@ -38,7 +38,7 @@ public class LocalPlayer : MonoBehaviour
 
     Card jokerToBePlayed;
     bool isChoosingSuit = false;
-    string jokerSuit = "";
+    string chosenCarduit = "";
     bool isNewJoker = false;
 
     void Start()
@@ -222,8 +222,8 @@ public class LocalPlayer : MonoBehaviour
     {
         if (CheckCardCanBePlayed(card.CardType))
         {
-            jokerSuit = "";
-            jokerText.text = "";
+            chosenCarduit = "";
+            suitText.text = "";
             Debug.Log("Played card: " + card.CardType + "  of index: " + card.CardIndex);
             card.PlayCard();
             card.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = (playedCardCounter + 10) * 10;
@@ -256,14 +256,14 @@ public class LocalPlayer : MonoBehaviour
     void StartJokerChoice()
     {
         SetCardsUsable(false);
-        jokerChoice.SetActive(true);
+        suitChoice.SetActive(true);
         isChoosingSuit = true;
     }
 
-    public void ChooseJokerSuite(string suit)
+    public void ChooseSuite(string suit)
     {
-        jokerChoice.SetActive(false);
-        client.PlayCard(jokerToBePlayed.CardIndex);
+        suitChoice.SetActive(false);
+        client.PlayCard(jokerToBePlayed.CardIndex); //put some sort of different var here for jack
         client.ChooseJokerSuit(suit);
         jokerToBePlayed = null;
         isThisPlayerTurn = false;
@@ -278,8 +278,8 @@ public class LocalPlayer : MonoBehaviour
     {
         print("Is turn: " + isThisPlayerTurn + "   this playerID: " + client.playerID + "   playerPlayingCard: " + player);
         if (isThisPlayerTurn || client.playerID == player - 1) return;
-        jokerSuit = "";
-        jokerText.text = "";
+        chosenCarduit = "";
+        suitText.text = "";
         Vector3 position = cardStack.position;
         int thisPlayerId = client.playerID + 1;
         int other = thisPlayerId - player > 0 ? thisPlayerId - player : 4 + (thisPlayerId - player);
@@ -302,23 +302,23 @@ public class LocalPlayer : MonoBehaviour
         ChangePlayerCardCount(player, -1);
     }
 
-    public void PlayerChoseJokerSuit(string suit)
+    public void PlayerChoseSuit(string suit)
     {
-        jokerSuit = suit;
+        chosenCarduit = suit;
         isNewJoker = true;
         switch (suit)
         {
             case "C":
-                jokerText.text = "Clubs";
+                suitText.text = "Clubs";
                 break;
             case "S":
-                jokerText.text = "Spades";
+                suitText.text = "Spades";
                 break;
             case "H":
-                jokerText.text = "Hearts";
+                suitText.text = "Hearts";
                 break;
             case "D":
-                jokerText.text = "Diamonds";
+                suitText.text = "Diamonds";
                 break;
         }
     }
@@ -415,9 +415,9 @@ public class LocalPlayer : MonoBehaviour
     {
         if (currentCard == null) return true;
         if (isNewJoker && card != "J") return false;
-        if (jokerSuit != "")
+        if (chosenCarduit != "")
         {
-            if (jokerSuit == card[0].ToString()) return true;
+            if (chosenCarduit == card[0].ToString()) return true;
             else if (card == "J") return true;
             else return false;
         }
