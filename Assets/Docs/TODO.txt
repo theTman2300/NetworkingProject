@@ -12,7 +12,4 @@ jack card (suit change)
 
 ace (switch direction)
 
-
-TODO:
-
 7 card (throw in another card)

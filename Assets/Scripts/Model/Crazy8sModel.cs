@@ -212,6 +212,12 @@ public class Crazy8sModel
             return;
         }
 
+        if (card.Remove(0, 1) == "7") //7 card (you get another turn)
+        {
+            OnChangePlayerTurn.Invoke(currentPlayer);
+            return;
+        }
+
         if (card.Remove(0, 1) == "1") //Ace card (switch direction of play)
         {
             rotationIsClockwise = !rotationIsClockwise;
