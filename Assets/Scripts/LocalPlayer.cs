@@ -36,7 +36,7 @@ public class LocalPlayer : MonoBehaviour
     int playedCardCounter = 0;
     bool isThisPlayerTurn = false;
 
-    Card jokerToBePlayed;
+    Card cardAfterChoice;
     bool isChoosingSuit = false;
     string chosenCarduit = "";
     bool isNewJoker = false;
@@ -146,7 +146,7 @@ public class LocalPlayer : MonoBehaviour
             cardsInHand[i].transform.DOMove(new Vector3(cardX - (cardX / 2), -3, cardsInHand[i].transform.position.z), .5f).SetEase(Ease.OutBack, 1.1f);
             cardsInHand[i].transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = i;
         }
-        if (finishedDealingCards && isThisPlayerTurn)
+        if (finishedDealingCards && isThisPlayerTurn && !isChoosingSuit)
             StartCoroutine(SetCardsUsable(true, .5f)); //this cannot be done in oncomplete, because it will try to reference i after the delay, meaning it will reference the wrong thing
     }
 
@@ -238,13 +238,23 @@ public class LocalPlayer : MonoBehaviour
                 if (restCard.CardIndex > card.CardIndex) restCard.CardIndex--;
             }
 
-            MoveCenterCardDeck(true);
-            if (card.CardType == "J")
+            if (card.CardType == "J") //joker
             {
-                jokerToBePlayed = card;
-                StartJokerChoice();
+                cardAfterChoice = card;
+                StartSuitChoice();
+                MoveCenterCardDeck(true);
                 return;
             }
+
+            if (card.CardType.Remove(0, 1) == "11") //jack
+            {
+                cardAfterChoice = card;
+                StartSuitChoice();
+                MoveCenterCardDeck(true);
+                return;
+            }
+
+            MoveCenterCardDeck(true);
             client.PlayCard(card.CardIndex);
         }
         else
@@ -253,19 +263,19 @@ public class LocalPlayer : MonoBehaviour
         }
     }
 
-    void StartJokerChoice()
+    void StartSuitChoice()
     {
+        isChoosingSuit = true;
         SetCardsUsable(false);
         suitChoice.SetActive(true);
-        isChoosingSuit = true;
     }
 
     public void ChooseSuite(string suit)
     {
         suitChoice.SetActive(false);
-        client.PlayCard(jokerToBePlayed.CardIndex); //put some sort of different var here for jack
+        client.PlayCard(cardAfterChoice.CardIndex); //put some sort of different var here for jack
         client.ChooseJokerSuit(suit);
-        jokerToBePlayed = null;
+        cardAfterChoice = null;
         isThisPlayerTurn = false;
         isChoosingSuit = false;
     }

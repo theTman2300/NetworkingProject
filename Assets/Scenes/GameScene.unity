@@ -294,7 +294,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1304523184}
         m_TargetAssemblyTypeName: LocalPlayer, Assembly-CSharp
-        m_MethodName: ChooseJokerSuite
+        m_MethodName: ChooseSuite
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -426,7 +426,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1304523184}
         m_TargetAssemblyTypeName: LocalPlayer, Assembly-CSharp
-        m_MethodName: ChooseJokerSuite
+        m_MethodName: ChooseSuite
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -782,7 +782,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1304523184}
         m_TargetAssemblyTypeName: LocalPlayer, Assembly-CSharp
-        m_MethodName: ChooseJokerSuite
+        m_MethodName: ChooseSuite
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1251,7 +1251,7 @@ GameObject:
   - component: {fileID: 289928326}
   - component: {fileID: 289928325}
   m_Layer: 0
-  m_Name: JokerText
+  m_Name: SuitText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2659,7 +2659,7 @@ GameObject:
   m_Component:
   - component: {fileID: 892968344}
   m_Layer: 5
-  m_Name: JokerChoice
+  m_Name: SuitChoice
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3305,8 +3305,8 @@ MonoBehaviour:
   player4: {fileID: 8476488997027111829}
   turnIndicator: {fileID: 1975873474}
   turnIndicatorPos: {fileID: 998047527}
-  jokerText: {fileID: 289928325}
-  jokerChoice: {fileID: 892968343}
+  suitText: {fileID: 289928325}
+  suitChoice: {fileID: 892968343}
 --- !u!4 &1304523185
 Transform:
   m_ObjectHideFlags: 0
@@ -4313,7 +4313,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1304523184}
         m_TargetAssemblyTypeName: LocalPlayer, Assembly-CSharp
-        m_MethodName: ChooseJokerSuite
+        m_MethodName: ChooseSuite
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

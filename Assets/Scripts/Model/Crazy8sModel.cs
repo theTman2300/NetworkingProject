@@ -181,10 +181,16 @@ public class Crazy8sModel
         playerCards[player - 1] = newPlayerCards;
         OnPlayerPlayedCard.Invoke(player, card);
 
-        if (card == "J")
+        if (card == "J") //joker (next player draw cards and this player change suit)
         {
             expectingSuitChoice = true;
             jokerCounter++;
+            return;
+        }
+
+        if (card.Remove(0, 1) == "11") //jack (suit change)
+        {
+            expectingSuitChoice = true;
             return;
         }
 
