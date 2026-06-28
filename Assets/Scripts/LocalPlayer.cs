@@ -37,6 +37,7 @@ public class LocalPlayer : MonoBehaviour
     bool isThisPlayerTurn = false;
 
     Card jokerToBePlayed;
+    bool isChoosingSuit = false;
     string jokerSuit = "";
     bool isNewJoker = false;
 
@@ -256,6 +257,7 @@ public class LocalPlayer : MonoBehaviour
     {
         SetCardsUsable(false);
         jokerChoice.SetActive(true);
+        isChoosingSuit = true;
     }
 
     public void ChooseJokerSuite(string suit)
@@ -265,6 +267,7 @@ public class LocalPlayer : MonoBehaviour
         client.ChooseJokerSuit(suit);
         jokerToBePlayed = null;
         isThisPlayerTurn = false;
+        isChoosingSuit = false;
     }
 
     /// <summary>
@@ -325,7 +328,7 @@ public class LocalPlayer : MonoBehaviour
     /// </summary>
     public void PlayerDrawNewCard()
     {
-        if (!isThisPlayerTurn) return;
+        if (!isThisPlayerTurn || isChoosingSuit) return;
         client.DrawCard();
         isThisPlayerTurn = false;
         SetCardsUsable(false);
